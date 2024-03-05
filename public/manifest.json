@@ -11,7 +11,9 @@
     "action": "/handle-link",
     "method": "GET",
     "params": {
-      "url": "link"
+      "url": "link",
+      "title": "title",
+      "text": "text"
     }
   },
   "icons": [
@@ -35,5 +37,9 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ]
+  ],
+  "dir": "ltr",
+  "lang": "en",
+  "categories": ["productivity", "utilities"],
+  "display_override": ["window-controls-overlay", "standalone"]
 }
