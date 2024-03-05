@@ -3,11 +3,11 @@ import { useRoute } from 'vue-router'
 
 const $route = useRoute()
 const sharedLink: string = $route.query.link as string
-const sanitizedLink = (link: string) => {
+const sanitizedLink = (link?: string) => {
   const regex =
     /[?&](utm_[^=]+|pk_[^=]+|fbclid|feature|src|ref|cmp|cmp_id|ref_source|ref_medium|ref_campaign|ref_content|ref_term|gclid|msclkid|yclid)=([^&]+)/gi
-  const cleanLink = link.replace(regex, '')
-  return cleanLink.replace(/[?&]$/, '')
+  const cleanLink = link?.replace(regex, '')
+  return cleanLink?.replace(/[?&]$/, '')
 }
 const share = async () => {
   if (navigator.share) {
