@@ -2,7 +2,7 @@
 import { useRoute } from 'vue-router'
 
 const $route = useRoute()
-const sharedLink: String = $route.query.link as string
+const sharedLink: string = $route.query.link as string
 const sanitizedLink = (link: string) => {
   const regex =
     /[?&](utm_[^=]+|pk_[^=]+|fbclid|feature|src|ref|cmp|cmp_id|ref_source|ref_medium|ref_campaign|ref_content|ref_term|gclid|msclkid|yclid)=([^&]+)/gi
