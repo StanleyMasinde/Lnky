@@ -15,7 +15,7 @@ const sanitizedLink = computed(() => {
     return
   }
   const regex =
-    /[?&](utm_[^=]+|pk_[^=]+|fbclid|feature|src|ref|cmp|cmp_id|ref_source|ref_medium|ref_campaign|ref_content|ref_term|gclid|msclkid|yclid)=([^&]+)/gi
+    /[?&](utm_[^=]+|pk_[^=]+|fbclid|feature|si|t|src|ref|cmp|cmp_id|ref_source|ref_medium|ref_campaign|ref_content|ref_term|gclid|msclkid|yclid)=([^&]+)/gi
   const cleanLink = currentLink?.replace(regex, '')
   return cleanLink?.replace(/[?&]$/, '')
 })
