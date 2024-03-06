@@ -8,7 +8,7 @@ const sharedText: string = $route.query.text as string
 const sanitizedLink = computed(() => {
   let currentLink = ''
   if (sharedLink) {
-    currentLink = sharedText
+    currentLink = sharedLink
   } else if (sharedText) {
     currentLink = sharedText
   } else {
@@ -33,7 +33,7 @@ const share = async () => {
     <div class="col-span-10 mb-8"></div>
     <div class="flex flex-col gap-2 mx-3">
       <textarea :value="sanitizedLink" readonly class="w-full rounded-lg"></textarea>
-      <button @click.prevent="share" class="border px-4 bg-blue-600 rounded-lg text-white py-2">
+      <button @click.prevent="share" class="border px-4 bg-primary rounded-lg text-white py-2">
         Share
       </button>
     </div>

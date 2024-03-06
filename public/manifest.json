@@ -1,5 +1,5 @@
 {
-  "theme_color": "#35f665",
+  "theme_color": "#695958",
   "background_color": "#ffffff",
   "display": "standalone",
   "scope": "/",
@@ -41,5 +41,8 @@
   "dir": "ltr",
   "lang": "en",
   "categories": ["productivity", "utilities"],
-  "display_override": ["window-controls-overlay", "standalone"]
+  "display_override": ["window-controls-overlay", "standalone"],
+  "launch_handler": {
+    "client_mode": ["focus-existing", "auto"]
+  }
 }
