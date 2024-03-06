@@ -1,43 +1,44 @@
 <script lang="ts" setup>
+import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 
 const $route = useRoute()
 const sharedLink: string = $route.query.link as string
 const sharedText: string = $route.query.text as string
-const sanitizedLink = (link?: string, text?: string) => {
+const sanitizedLink = computed(() => {
   let currentLink = ''
-  if (link) {
-    currentLink = link
-  }
-  if (text) {
-    currentLink = text
+  if (sharedLink) {
+    currentLink = sharedText
+  } else if (sharedText) {
+    currentLink = sharedText
+  } else {
+    return
   }
   const regex =
     /[?&](utm_[^=]+|pk_[^=]+|fbclid|feature|src|ref|cmp|cmp_id|ref_source|ref_medium|ref_campaign|ref_content|ref_term|gclid|msclkid|yclid)=([^&]+)/gi
   const cleanLink = currentLink?.replace(regex, '')
   return cleanLink?.replace(/[?&]$/, '')
-}
+})
 const share = async () => {
   if (navigator.share) {
     await navigator.share({
-      url: sanitizedLink(sharedLink, sharedText)
+      url: sanitizedLink.value
     })
   }
 }
 </script>
 
 <template>
-  <main class="flex flex-col justify-end h-screen bg-gray-300">
+  <main v-if="sanitizedLink" class="flex flex-col justify-end h-screen bg-gray-300">
     <div class="col-span-10 mb-8"></div>
     <div class="flex flex-col gap-2 mx-3">
-      <textarea
-        :value="sanitizedLink(sharedLink, sharedText)"
-        readonly
-        class="w-full rounded-lg"
-      ></textarea>
+      <textarea :value="sanitizedLink" readonly class="w-full rounded-lg"></textarea>
       <button @click.prevent="share" class="border px-4 bg-blue-600 rounded-lg text-white py-2">
         Share
       </button>
     </div>
+  </main>
+  <main v-else class="text-center">
+    <h1 class="font-bold text-3xl">No valid link found</h1>
   </main>
 </template>

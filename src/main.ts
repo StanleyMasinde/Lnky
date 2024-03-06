@@ -5,7 +5,7 @@ import App from './App.vue'
 import router from './router'
 
 // Register the service worker
-if (navigator.serviceWorker) {
+if (process.env.NODE_ENV !== 'development' && navigator.serviceWorker) {
   navigator.serviceWorker.register('/sw.js')
 }
 
