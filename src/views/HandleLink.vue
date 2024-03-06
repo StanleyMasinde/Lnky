@@ -3,7 +3,7 @@ import { useRoute } from 'vue-router'
 
 const $route = useRoute()
 const sharedLink: string = $route.query.link as string
-const sharedText: string = $route.query.link as string
+const sharedText: string = $route.query.text as string
 const sanitizedLink = (link?: string, text?: string) => {
   let currentLink = ''
   if (link) {
