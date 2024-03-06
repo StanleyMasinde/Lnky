@@ -28,9 +28,7 @@ const share = async () => {
 
 <template>
   <main class="flex flex-col justify-end h-screen bg-gray-300">
-    <div class="col-span-10 mb-8">
-      {{ $route.query }}
-    </div>
+    <div class="col-span-10 mb-8"></div>
     <div class="flex flex-col gap-2 mx-3">
       <textarea
         :value="sanitizedLink(sharedLink, sharedText)"
