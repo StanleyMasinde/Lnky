@@ -22,6 +22,7 @@
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.10.5",
     "@stylistic/eslint-plugin": "^3.0.1",
+    "@stylistic/eslint-plugin-js": "^3.0.1",
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/postcss": "^4.0.1",
     "@tsconfig/node20": "^20.1.4",
