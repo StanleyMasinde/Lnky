@@ -6,7 +6,7 @@ import router from './router'
 
 // Register the service worker
 if (import.meta.env.PROD && navigator.serviceWorker) {
-  navigator.serviceWorker.register('/sw.js')
+	navigator.serviceWorker.register('/sw.js')
 }
 
 const app = createApp(App)

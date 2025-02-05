@@ -6,27 +6,27 @@ const $route = useRoute()
 const sharedLink: string = $route.query.link as string
 const sharedText: string = $route.query.text as string
 const sanitizedLink = computed(() => {
-  let currentLink = ''
-  if (sharedLink) {
-    currentLink = sharedLink
-  }
-  else if (sharedText) {
-    currentLink = sharedText
-  }
-  else {
-    return
-  }
-  const regex
+	let currentLink = ''
+	if (sharedLink) {
+		currentLink = sharedLink
+	}
+	else if (sharedText) {
+		currentLink = sharedText
+	}
+	else {
+		return
+	}
+	const regex
     = /[?&](utm_[^=]+|pk_[^=]+|fbclid|feature|si|t|src|ref|cmp|cmp_id|ref_source|ref_medium|ref_campaign|ref_content|ref_term|gclid|msclkid|yclid)=([^&]+)/gi
-  const cleanLink = currentLink?.replace(regex, '')
-  return cleanLink?.replace(/[?&]$/, '')
+	const cleanLink = currentLink?.replace(regex, '')
+	return cleanLink?.replace(/[?&]$/, '')
 })
 const share = async () => {
-  if (navigator.share) {
-    await navigator.share({
-      url: sanitizedLink.value,
-    })
-  }
+	if (navigator.share) {
+		await navigator.share({
+			url: sanitizedLink.value,
+		})
+	}
 }
 </script>
 
