@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { ref, Ref } from 'vue'
+import type { Ref } from 'vue'
+import { ref } from 'vue'
+
 const sanitizedLink: Ref<string | undefined> = ref()
 const currentLink: Ref<string | undefined> = ref()
 // Listen to changes on the
@@ -18,6 +20,14 @@ const cleanLink = () => {
 	sanitizedLink.value = cleanedLink
 }
 
+const share = async () => {
+	if (navigator.share) {
+		await navigator.share({
+			url: sanitizedLink.value,
+		})
+	}
+}
+
 </script>
 
 <template>
@@ -29,7 +39,7 @@ const cleanLink = () => {
 					<form @submit.prevent="cleanLink()">
 						<div class="flex flex-col gap-4">
 							<div>
-								<label for="linkInput" @change="onLinkInputChange">Paste the link below</label>
+								<label for="linkInput">Paste the link below</label>
 								<input v-model="currentLink" class="w-full rounded-lg" type="url" id="linkInput"
 									placeholder="Paste the URL here" />
 							</div>
