@@ -21,10 +21,55 @@ const cleanLink = () => {
 }
 
 const share = async () => {
-	if (navigator.share) {
+	if (navigator.share && sanitizedLink.value) {
+		// Save the link in the local database
+		await saveLinkInDb(sanitizedLink.value)
+
+		// Share using the OS share option.
+		// More ways may be added in future
 		await navigator.share({
 			url: sanitizedLink.value,
 		})
+	}
+}
+
+const saveLinkInDb = (link: string) => {
+	const request = indexedDB.open('linksDb', 1)
+
+	request.onupgradeneeded = (event) => {
+		const database = (event.target as IDBOpenDBRequest).result
+		if (!database.objectStoreNames.contains('links')) {
+			const objectStore = database.createObjectStore('links', { autoIncrement: true })
+			objectStore.createIndex('url', 'url', { unique: true })
+			objectStore.createIndex('createdAt', 'createdAt')
+		}
+	}
+
+	request.onsuccess = (event) => {
+		const database = (event.target as IDBOpenDBRequest).result
+
+		// Open a transaction to write data
+		const transaction = database.transaction('links', 'readwrite')
+		const objectStore = transaction.objectStore('links')
+
+		const newLink = {
+			url: link,
+			createdAt: new Date().toISOString(),
+		}
+
+		const addRequest = objectStore.add(newLink)
+
+		addRequest.onsuccess = () => {
+			console.log('Link saved successfully:', link)
+		}
+
+		addRequest.onerror = (error) => {
+			console.error('Error saving link:', (error.target as IDBRequest).error)
+		}
+	}
+
+	request.onerror = (event) => {
+		console.error('Database error:', (event.target as IDBOpenDBRequest).error)
 	}
 }
 
