@@ -27,9 +27,14 @@ const share = async () => {
 
 		// Share using the OS share option.
 		// More ways may be added in future
-		await navigator.share({
-			url: sanitizedLink.value,
-		})
+		try {
+			await navigator.share({
+				url: sanitizedLink.value,
+			})
+		}
+		catch (err) {
+			console.warn('This needs to be handled', err)
+		}
 	}
 }
 
@@ -76,21 +81,33 @@ const saveLinkInDb = (link: string) => {
 </script>
 
 <template>
-	<main class="grid grid-cols-12 grid-rows-2 place-items-center h-screen">
+	<main class="grid grid-cols-12 grid-rows-1 place-items-center h-screen mx-2">
 		<div class="col-span-12">
 			<div class="border-2 border-primary rounded-lg p-5">
+				<div class="flex justify-center mb-2">
+					<RouterLink data-cy="home-link" active-class="bg-primary text-white" to="/"
+						class="w-full text-center p-2 rounded-lg">
+						Home
+					</RouterLink>
+
+					<RouterLink data-cy="saved-links-link" to="/saved-links" active-class="bg-primary text-white"
+						class="w-full text-center p-2 rounded-lg">
+						Saved links
+					</RouterLink>
+				</div>
 				<h1 class="font-medium text-lg">Welcome to Lnky</h1>
 				<div>
 					<form @submit.prevent="cleanLink()">
 						<div class="flex flex-col gap-4">
 							<div>
 								<label for="linkInput">Paste the link below</label>
-								<input v-model="currentLink" class="w-full rounded-lg" type="url" id="linkInput"
-									placeholder="Paste the URL here" />
+								<input data-cy="url-input" v-model="currentLink" class="w-full rounded-lg" type="url"
+									id="linkInput" placeholder="Paste the URL here" />
 							</div>
 
 							<div>
-								<button class="bg-primary text-white rounded-lg w-full p-2" id="cleanButton">
+								<button data-cy="clean-button" class="bg-primary text-white rounded-lg w-full p-2"
+									id="cleanButton">
 									Clean link
 								</button>
 							</div>
@@ -100,9 +117,10 @@ const saveLinkInDb = (link: string) => {
 					<hr>
 
 					<div class="flex flex-col gap-2 mt-5">
-						<textarea id="cleanedOutput" :value="sanitizedLink" readonly
+						<textarea data-cy="cleaned-url" id="cleanedOutput" :value="sanitizedLink" readonly
 							class="w-full rounded-lg"></textarea>
-						<button @click.prevent="share" class="border px-4 bg-primary rounded-lg text-white py-2">
+						<button data-cy="share-button" @click.prevent="share"
+							class="border px-4 bg-primary rounded-lg text-white py-2">
 							Share
 						</button>
 					</div>
