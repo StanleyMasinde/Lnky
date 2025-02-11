@@ -1,48 +1,58 @@
 {
-  "theme_color": "#695958",
-  "background_color": "#ffffff",
-  "display": "standalone",
-  "scope": "/",
-  "start_url": "/",
-  "name": "Lnky",
-  "short_name": "Lnky",
-  "description": "Remove trackers from links",
-  "share_target": {
-    "action": "/handle-link",
-    "method": "GET",
-    "params": {
-      "url": "link",
-      "title": "title",
-      "text": "text"
-    }
-  },
-  "icons": [
-    {
-      "src": "/icons/icon-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/icons/icon-256x256.png",
-      "sizes": "256x256",
-      "type": "image/png"
-    },
-    {
-      "src": "/icons/icon-384x384.png",
-      "sizes": "384x384",
-      "type": "image/png"
-    },
-    {
-      "src": "/icons/icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ],
-  "dir": "ltr",
-  "lang": "en",
-  "categories": ["productivity", "utilities"],
-  "display_override": ["window-controls-overlay", "standalone"],
-  "launch_handler": {
-    "client_mode": ["focus-existing", "auto"]
-  }
+	"theme_color": "#695958",
+	"background_color": "#ffffff",
+	"display": "standalone",
+	"scope": "/",
+	"start_url": "/",
+	"name": "Lnky",
+	"short_name": "Lnky",
+	"description": "Remove trackers from links",
+	"share_target": {
+		"action": "/handle-link",
+		"method": "GET",
+		"enctype": "application/x-www-form-urlencoded",
+		"params": {
+			"url": "link",
+			"title": "title",
+			"text": "text"
+		}
+	},
+	"icons": [
+		{
+			"src": "/icons/icon-192x192.png",
+			"sizes": "192x192",
+			"type": "image/png"
+		},
+		{
+			"src": "/icons/icon-256x256.png",
+			"sizes": "256x256",
+			"type": "image/png"
+		},
+		{
+			"src": "/icons/icon-384x384.png",
+			"sizes": "384x384",
+			"type": "image/png"
+		},
+		{
+			"src": "/icons/icon-512x512.png",
+			"sizes": "512x512",
+			"type": "image/png"
+		}
+	],
+	"dir": "ltr",
+	"lang": "en",
+	"categories": [
+		"productivity",
+		"utilities"
+	],
+	"display_override": [
+		"window-controls-overlay",
+		"standalone"
+	],
+	"launch_handler": {
+		"client_mode": [
+			"focus-existing",
+			"auto"
+		]
+	}
 }
