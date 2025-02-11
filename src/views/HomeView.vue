@@ -23,7 +23,7 @@ const cleanLink = () => {
 const share = async () => {
 	if (navigator.share && sanitizedLink.value) {
 		// Save the link in the local database
-		await saveLinkInDb(sanitizedLink.value)
+		saveLinkInDb(sanitizedLink.value)
 
 		// Share using the OS share option.
 		// More ways may be added in future
