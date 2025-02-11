@@ -3,16 +3,17 @@ import type { Ref } from 'vue'
 import { ref, onMounted } from 'vue'
 
 interface SavedLink {
-	url: string
+	id: IDBValidKey
+	url: { url: string }
 }
 
-const savedLinks: Ref<SavedLink> = ref([])
+const savedLinks: Ref<SavedLink[]> = ref([])
 
 onMounted(() => {
 	const request = indexedDB.open('linksDb', 1)
 
 	request.onsuccess = (event) => {
-		const db = event.target.result
+		const db = (event.target as IDBOpenDBRequest)?.result as IDBDatabase
 
 		// Open a transaction before accessing object store
 		const transaction = db.transaction('links', 'readonly')
@@ -21,7 +22,7 @@ onMounted(() => {
 		const cursorRequest = objectStore.openCursor()
 
 		cursorRequest.onsuccess = (event) => {
-			const cursor = event.target.result
+			const cursor: IDBCursorWithValue | null = (event.target as IDBRequest).result
 			if (cursor) {
 				savedLinks.value = [...savedLinks.value, { id: cursor.key, url: cursor.value }]
 				cursor.continue()
