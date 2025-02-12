@@ -54,5 +54,8 @@
 			"focus-existing",
 			"auto"
 		]
-	}
+	},
+	"id": "Lnky",
+	"orientation": "any",
+	"prefer_related_applications": false
 }
