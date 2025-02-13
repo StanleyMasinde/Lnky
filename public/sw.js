@@ -1,48 +1,60 @@
-/**
- * The main service worker file.
- * Author: Stanley Masinde
+/*
+ * -----------------------------------------------------------
+ *  Main service worker file
+ *  This new version was created on 2025-02-12
+ *  Copyright (c) 2025 Stanley Masinde. All Rights Reserved.
+ *  ----------------------------------------------------------
  */
-const version = 'v0.1.5'
+
+const cacheVersion = 'v2'
+const staticCache = [
+	'/',
+	'/favicon.ico',
+	'/manifest.json',
+	'/saved-links',
+	'/icons/icon-192x192.png',
+	'/icons/icon-256x256.png',
+	'/icons/icon-384x384.png',
+	'/icons/icon-512x512.png',
+]
+
+// Handle fetch
+const handleFetch = async (request) => {
+	console.log('Fetching', request)
+	const responseFromCache = await caches.match(request)
+
+	if (responseFromCache) {
+		return responseFromCache
+	}
+
+	console.log('There is no cache for', request)
+	try {
+		const networkResponse = await fetch(request)
+		const clonedResponse = networkResponse.clone()
+
+		const cache = await caches.open(cacheVersion)
+		await cache.put(request, clonedResponse)
+
+		return networkResponse
+	}
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	catch (error) {
+		return new Response('It looks like you are offline', { status: 503 })
+	}
+}
+
+// Install event
 self.addEventListener('install', (event) => {
 	event.waitUntil(
-		caches.open(version).then(async (cache) => {
-			await cache.addAll([
-				'/',
-				'/about',
-				'/handle-link',
-			])
-		}).then(() => self.skipWaiting()),
+		caches.open(cacheVersion)
+			.then((cacheStore) => {
+				cacheStore.addAll(staticCache)
+			}),
 	)
 })
 
-// // ----------------------------------------------------------------------------
-// // Service worker activation.
-// // ----------------------------------------------------------------------------
-self.addEventListener('activate', (event) => {
-	console.log('[Service Worker] Activating Service Worker ...')
-	event.waitUntil(
-		caches.keys().then((keyList) => {
-			return Promise.all(keyList.map((key) => {
-				console.log('[Service Worker] Removing old cache.', key)
-				return caches.delete(key)
-			}))
-		}),
-	)
-	return self.clients.claim()
-})
-
-// // ----------------------------------------------------------------------------
-// // Service worker fetch event.
-// // ----------------------------------------------------------------------------
+// Fetch event
 self.addEventListener('fetch', (event) => {
-	console.log('[Service Worker] Fetching resource: ', event.request.url)
-	event.respondWith(
-		caches.open(version).then(async (cache) => {
-			const response = await cache.match(event.request)
-			return response || fetch(event.request).then((response_1) => {
-				cache.put(event.request, response_1.clone())
-				return response_1
-			})
-		}),
-	)
+	console.log('Fetch event handler', event.request)
+	event.respondWith(handleFetch(event.request))
 })
