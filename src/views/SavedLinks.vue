@@ -3,7 +3,7 @@ import type { Ref } from 'vue'
 import { ref, onMounted } from 'vue'
 
 interface SavedLink {
-	id: IDBVaLidKey
+	id: IDBValidKey
 	link: { url: string, createdAt: string }
 }
 
