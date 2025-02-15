@@ -4,7 +4,7 @@ import { ref, onMounted } from 'vue'
 
 interface SavedLink {
 	id: IDBValidKey
-	url: { url: string }
+	url: { url: string, createdAt: string }
 }
 
 const savedLinks: Ref<SavedLink[]> = ref([])
