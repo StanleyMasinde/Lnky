@@ -3,8 +3,8 @@ import type { Ref } from 'vue'
 import { ref, onMounted } from 'vue'
 
 interface SavedLink {
-	id: IDBValidKey
-	url: { url: string, createdAt: string }
+	id: IDBVaLidKey
+	link: { url: string, createdAt: string }
 }
 
 const savedLinks: Ref<SavedLink[]> = ref([])
@@ -24,7 +24,7 @@ onMounted(() => {
 		cursorRequest.onsuccess = (event) => {
 			const cursor: IDBCursorWithValue | null = (event.target as IDBRequest).result
 			if (cursor) {
-				savedLinks.value = [...savedLinks.value, { id: cursor.key, url: cursor.value }]
+				savedLinks.value = [...savedLinks.value, { id: cursor.key, link: cursor.value }]
 				cursor.continue()
 			}
 		}
@@ -58,8 +58,8 @@ onMounted(() => {
 					<div v-for="(link, index) in savedLinks" class="border rounded-lg p-2 m-4 overflow-x-auto"
 						:key="index">
 						<div>
-							<p class="text-lg">{{ link.url.url }}</p>
-							<small class="text-xs font-semibold">{{ new Date(link.url.createdAt) }}</small>
+							<p class="text-lg">{{ link.link.url }}</p>
+							<small class="text-xs font-semibold">{{ new Date(link.link.createdAt) }}</small>
 						</div>
 					</div>
 				</div>
