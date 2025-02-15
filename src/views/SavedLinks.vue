@@ -37,10 +37,10 @@ onMounted(() => {
 </script>
 
 <template>
-	<main class="grid grid-cols-12 grid-rows-1 place-items-center h-screen mx-2">
-		<div class="col-span-12 w-full md:min-w-[75vw]">
-			<div class="border-2 border-primary rounded-lg p-5">
-				<div class="flex justify-center mb-2 w-full">
+	<main class="grid grid-cols-12 grid-rows-1 mx-2 md:mx-48">
+		<div class="col-span-12 w-full">
+			<div class="rounded-lg p-5">
+				<div class="flex justify-center mb-2 w-full sticky top-0 bg-white p-2">
 					<RouterLink data-cy="home-link" active-class="bg-primary text-white" to="/"
 						class="w-full text-center p-2 rounded-lg">
 						Home
@@ -58,7 +58,8 @@ onMounted(() => {
 					<div v-for="(link, index) in savedLinks" class="border rounded-lg p-2 m-4 overflow-x-auto"
 						:key="index">
 						<div>
-							<p>{{ link.url.url }}</p>
+							<p class="text-lg">{{ link.url.url }}</p>
+							<small class="text-xs font-semibold">{{ new Date(link.url.createdAt) }}</small>
 						</div>
 					</div>
 				</div>

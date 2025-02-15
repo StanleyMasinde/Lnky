@@ -18,6 +18,9 @@ const cleanLink = () => {
 
 	// Set the cleaned URL
 	sanitizedLink.value = cleanedLink
+
+	// Save the link in the local database
+	saveLinkInDb(sanitizedLink.value)
 }
 
 const share = async () => {
@@ -81,10 +84,10 @@ const saveLinkInDb = (link: string) => {
 </script>
 
 <template>
-	<main class="grid grid-cols-12 grid-rows-1 place-items-center h-screen mx-2">
+	<main class="grid grid-cols-12 grid-rows-1  mx-2 md:mx-48">
 		<div class="col-span-12">
-			<div class="border-2 border-primary rounded-lg p-5">
-				<div class="flex justify-center mb-2">
+			<div class="border-primary rounded-lg p-5">
+				<div class="flex justify-center mb-2 sticky top-0 bg-white p-2">
 					<RouterLink data-cy="home-link" active-class="bg-primary text-white" to="/"
 						class="w-full text-center p-2 rounded-lg">
 						Home
