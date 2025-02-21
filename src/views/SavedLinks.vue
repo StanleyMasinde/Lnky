@@ -55,6 +55,9 @@ onMounted(() => {
 
 				<!-- The list of links -->
 				<div data-cy="saved-link-item ">
+
+					<div class="text-center">No links found!</div>
+
 					<div v-for="(link, index) in savedLinks" class="border rounded-lg p-2 m-4 overflow-x-auto"
 						:key="index">
 						<div>
