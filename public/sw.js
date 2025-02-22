@@ -6,10 +6,10 @@
  *  ----------------------------------------------------------
  */
 
-const cacheVersion = 'v0.6.0'
+const cacheVersion = 'v0.6.1'
 const staticCache = [
 	'/',
-	'/favicon.ico',
+	'/icons/favicon.ico',
 	'/manifest.json',
 	'/saved-links',
 	'/icons/icon-192x192.png',
@@ -49,6 +49,22 @@ self.addEventListener('install', (event) => {
 		caches.open(cacheVersion)
 			.then((cacheStore) => {
 				cacheStore.addAll(staticCache)
+			}),
+	)
+})
+
+// Activate event
+self.addEventListener('activate', (event) => {
+	const cacheToKeep = cacheVersion
+	event.waitUntil(
+		caches
+			.keys()
+			.then((keys) => {
+				keys.forEach((cacheName) => {
+					if (cacheName !== cacheToKeep) {
+						caches.delete(cacheName)
+					}
+				})
 			}),
 	)
 })
