@@ -100,7 +100,7 @@ const saveLinkInDb = (link: string) => {
 				</div>
 				<h1 class="font-medium text-lg">Welcome to Lnky</h1>
 				<div>
-					<form @submit.prevent="cleanLink()">
+					<form @submit.prevent="cleanLink()" @reset="currentLink = undefined;sanitizedLink = undefined">
 						<div class="flex flex-col gap-4">
 							<div>
 								<label for="linkInput">Paste the link below</label>
@@ -108,12 +108,13 @@ const saveLinkInDb = (link: string) => {
 									id="linkInput" placeholder="Paste the URL here" />
 							</div>
 
-							<div>
+							<div class="flex gap-1">
 								<button :disabled="!currentLink" data-cy="clean-button"
 									class="bg-primary text-white rounded-lg w-full p-2 cursor-pointer disabled:cursor-not-allowed disabled:bg-primary/50"
 									id="cleanButton">
 									Clean link
 								</button>
+								<button class="w-full bg-secondary rounded-lg text-white" type="reset">Reset</button>
 							</div>
 						</div>
 					</form>
