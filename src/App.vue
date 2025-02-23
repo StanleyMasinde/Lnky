@@ -4,9 +4,11 @@ import { RouterView } from 'vue-router'
 
 <template>
 	<header></header>
-	<Transition enter-active-class="duration-1500 ease-out" enter-from-class="transform opacity-0"
-		enter-to-class="opacity-100" leave-active-class="duration-500 ease-in" leave-from-class="opacity-100"
-		leave-to-class="transform opacity-0">
-		<RouterView />
-	</Transition>
+
+	<RouterView v-slot="{ Component }">
+		<Transition enter-from-class="translate-x-[150%] opacity-0" leave-to-class="translate-x-[150%] opacity-0"
+			enter-active-class="transition duration-300" leave-active-class="transition duration-300">
+			<component :is="Component" />
+		</Transition>
+	</RouterView>
 </template>
