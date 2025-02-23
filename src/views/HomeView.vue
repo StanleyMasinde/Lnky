@@ -104,7 +104,7 @@ const saveLinkInDb = (link: string) => {
 						<div class="flex flex-col gap-4">
 							<div>
 								<label for="linkInput">Paste the link below</label>
-								<input data-cy="url-input" v-model="currentLink" class="w-full rounded-lg" type="url"
+								<input data-cy="url-input" autocomplete="off" v-model="currentLink" class="w-full rounded-lg" type="url"
 									id="linkInput" placeholder="Paste the URL here" />
 							</div>
 
