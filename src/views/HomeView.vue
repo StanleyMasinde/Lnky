@@ -109,7 +109,8 @@ const saveLinkInDb = (link: string) => {
 							</div>
 
 							<div>
-								<button data-cy="clean-button" class="bg-primary text-white rounded-lg w-full p-2"
+								<button :disabled="!currentLink" data-cy="clean-button"
+									class="bg-primary text-white rounded-lg w-full p-2 cursor-pointer disabled:cursor-not-allowed disabled:bg-primary/50"
 									id="cleanButton">
 									Clean link
 								</button>
@@ -122,8 +123,8 @@ const saveLinkInDb = (link: string) => {
 					<div class="flex flex-col gap-2 mt-5">
 						<textarea data-cy="cleaned-url" id="cleanedOutput" :value="sanitizedLink" readonly
 							class="w-full rounded-lg"></textarea>
-						<button data-cy="share-button" @click.prevent="share"
-							class="border px-4 bg-primary rounded-lg text-white py-2">
+						<button :disabled="!sanitizedLink" data-cy="share-button" @click.prevent="share"
+							class="border px-4 bg-primary rounded-lg text-white py-2 cursor-pointer disabled:cursor-not-allowed disabled:bg-primary/50">
 							Share
 						</button>
 					</div>
