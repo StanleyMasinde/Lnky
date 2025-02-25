@@ -100,12 +100,13 @@ const saveLinkInDb = (link: string) => {
 				</div>
 				<h1 class="font-medium text-lg">Welcome to Lnky</h1>
 				<div>
-					<form @submit.prevent="cleanLink()" @reset="currentLink = undefined;sanitizedLink = undefined">
+					<form @submit.prevent="cleanLink()" @reset="currentLink = undefined; sanitizedLink = undefined">
 						<div class="flex flex-col gap-4">
 							<div>
 								<label for="linkInput">Paste the link below</label>
-								<input data-cy="url-input" autocomplete="off" v-model="currentLink" class="w-full rounded-lg" type="url"
-									id="linkInput" placeholder="Paste the URL here" />
+								<input data-cy="url-input" autocomplete="off" v-model="currentLink"
+									class="w-full rounded-lg" type="url" id="linkInput"
+									placeholder="Paste the URL here" />
 							</div>
 
 							<div class="flex gap-1">
