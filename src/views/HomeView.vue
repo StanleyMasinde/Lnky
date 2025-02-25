@@ -4,6 +4,7 @@ import { ref } from 'vue'
 
 const sanitizedLink: Ref<string | undefined> = ref()
 const currentLink: Ref<string | undefined> = ref()
+const popoverElement = ref<HTMLDivElement>()
 // Listen to changes on the
 const cleanLink = () => {
 	if (!currentLink.value) return // Ensure the input link is not null or undefined
@@ -37,6 +38,21 @@ const share = async () => {
 		}
 		catch (err) {
 			console.warn('This needs to be handled', err)
+		}
+	}
+}
+
+// Copy to to clipboard
+const copyToClipBoard = async () => {
+	if (sanitizedLink.value) {
+		try {
+			await navigator.clipboard.writeText(sanitizedLink.value)
+			popoverElement.value?.showPopover()
+
+			setTimeout(() => popoverElement.value?.hidePopover(), 5000)
+		}
+		catch (err) {
+			console.log(err)
 		}
 	}
 }
@@ -100,12 +116,13 @@ const saveLinkInDb = (link: string) => {
 				</div>
 				<h1 class="font-medium text-lg">Welcome to Lnky</h1>
 				<div>
-					<form @submit.prevent="cleanLink()" @reset="currentLink = undefined;sanitizedLink = undefined">
+					<form @submit.prevent="cleanLink()" @reset="currentLink = undefined; sanitizedLink = undefined">
 						<div class="flex flex-col gap-4">
 							<div>
 								<label for="linkInput">Paste the link below</label>
-								<input data-cy="url-input" autocomplete="off" v-model="currentLink" class="w-full rounded-lg" type="url"
-									id="linkInput" placeholder="Paste the URL here" />
+								<input data-cy="url-input" autocomplete="off" v-model="currentLink"
+									class="w-full rounded-lg" type="url" id="linkInput"
+									placeholder="Paste the URL here" />
 							</div>
 
 							<div class="flex gap-1">
@@ -122,15 +139,27 @@ const saveLinkInDb = (link: string) => {
 					<hr>
 
 					<div class="flex flex-col gap-2 mt-5">
-						<textarea data-cy="cleaned-url" id="cleanedOutput" :value="sanitizedLink" readonly
-							class="w-full rounded-lg"></textarea>
-						<button :disabled="!sanitizedLink" data-cy="share-button" @click.prevent="share"
-							class="border px-4 bg-primary rounded-lg text-white py-2 cursor-pointer disabled:cursor-not-allowed disabled:bg-primary/50">
-							Share
-						</button>
+						<textarea placeholder="Cleaned link will appear here" data-cy="cleaned-url" id="cleanedOutput"
+							:value="sanitizedLink" readonly class="w-full rounded-lg"></textarea>
+
+						<div class="grid grid-rows-1 grid-cols-1 md:grid-cols-2 gap-2">
+							<button :disabled="!sanitizedLink" data-cy="share-button" @click.prevent="share"
+								class="border px-4 bg-primary rounded-lg text-white py-2 cursor-pointer w-full disabled:cursor-not-allowed disabled:bg-primary/50">
+								Share
+							</button>
+
+							<button :disabled="!sanitizedLink" @click.prevent="copyToClipBoard()"
+								class="border px-4 bg-primary rounded-lg text-white py-2 cursor-pointer w-full disabled:cursor-not-allowed disabled:bg-primary/50">
+								Copy to clipboard
+							</button>
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
+
+		<div popover id="my-popover" ref="popoverElement"
+			class="bg-black/75 text-white border py-2 shadow rounded-lg fixed w-full text-center">Text copied to
+			clipboard</div>
 	</main>
 </template>
