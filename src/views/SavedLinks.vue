@@ -8,9 +8,19 @@ interface SavedLink {
 }
 
 const savedLinks: Ref<SavedLink[]> = ref([])
+const deleteRef = ref<HTMLDialogElement>()
+const currentToDelete = ref<SavedLink>()
+
+const confirmDelete = (link: SavedLink) => {
+	currentToDelete.value = link
+	deleteRef.value?.showModal()
+}
 
 // Delete Link
-const deleteLink = (id: IDBValidKey) => {
+const deleteLink = () => {
+	if (!currentToDelete.value?.id) {
+		return
+	}
 	const openDbRequest = indexedDB.open('linksDb', 1)
 
 	openDbRequest.onsuccess = (event) => {
@@ -19,10 +29,11 @@ const deleteLink = (id: IDBValidKey) => {
 		const transaction = db.transaction('links', 'readwrite')
 		const objectStore = transaction.objectStore('links')
 
-		const deleteOperation = objectStore.delete(id)
+		const deleteOperation = objectStore.delete(currentToDelete.value.id)
 		deleteOperation.onsuccess = (ev) => {
 			console.log(ev)
 			fetchSavedNotes()
+			deleteRef.value?.close()
 		}
 	}
 }
@@ -93,12 +104,31 @@ onMounted(() => {
 
 						<!-- Actions -->
 						<div class="flex flex-col mt-2">
-							<button @click.prevent="deleteLink(link.id)"
+							<button @click.prevent="confirmDelete(link)"
 								class="bg-red-500 text-white rounded-lg py-1">Delete</button>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
+
+		<!-- dialog for the delete confirmation -->
+		<dialog popover ref="deleteRef" class="p-6 bg-white rounded-lg shadow-lg w-96">
+			<div>
+				<h3 class="text-lg font-semibold">Are you sure ?</h3>
+				<p class="text-sm text-gray-600">This link will be lost forever</p>
+
+				<hr>
+
+				<div class="mt-4 flex justify-end gap-2">
+					<button @click.prevent="deleteRef?.close()" class="px-4 py-2 bg-gray-200 rounded-lg">
+						No, Don't delete
+					</button>
+
+					<button @click.prevent="deleteLink()" class="px-4 py-2 bg-red-600 text-white rounded-lg">Yes,
+						delete</button>
+				</div>
+			</div>
+		</dialog>
 	</main>
 </template>
