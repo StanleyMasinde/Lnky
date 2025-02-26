@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Ref } from 'vue'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, TransitionGroup } from 'vue'
 
 interface SavedLink {
 	id: IDBValidKey
@@ -93,21 +93,23 @@ onMounted(() => {
 
 					<div class="text-center" v-if="savedLinks.length == 0">No links found!</div>
 
-					<div v-else v-for="(link, index) in savedLinks" class="border rounded-lg p-2 m-4" :key="index">
-						<div class="line-clamp-1">
-							<p class="text-lg">{{ link.link.url }}</p>
-						</div>
+					<TransitionGroup name="list" tag="div" v-else>
+						<div v-for="(link, index) in savedLinks" class="border rounded-lg p-2 m-4" :key="index">
+							<div class="line-clamp-1">
+								<p class="text-lg">{{ link.link.url }}</p>
+							</div>
 
-						<div>
-							<small class="text-xs font-semibold">{{ new Date(link.link.createdAt) }}</small>
-						</div>
+							<div>
+								<small class="text-xs font-semibold">{{ new Date(link.link.createdAt) }}</small>
+							</div>
 
-						<!-- Actions -->
-						<div class="flex flex-col mt-2">
-							<button @click.prevent="confirmDelete(link)"
-								class="bg-red-500 text-white rounded-lg py-1">Delete</button>
+							<!-- Actions -->
+							<div class="flex flex-col mt-2">
+								<button @click.prevent="confirmDelete(link)"
+									class="bg-red-500 text-white rounded-lg py-1">Delete</button>
+							</div>
 						</div>
-					</div>
+					</TransitionGroup>
 				</div>
 			</div>
 		</div>
@@ -132,3 +134,16 @@ onMounted(() => {
 		</dialog>
 	</main>
 </template>
+
+<style lang="css">
+.list-enter-active,
+.list-leave-active {
+	transition: all 0.5s ease;
+}
+
+.list-enter-from,
+.list-leave-to {
+	opacity: 0;
+	transform: translateX(30px);
+}
+</style>
