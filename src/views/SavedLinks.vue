@@ -18,7 +18,9 @@ const confirmDelete = (link: SavedLink) => {
 
 // Delete Link
 const deleteLink = () => {
-	if (!currentToDelete.value?.id) {
+	const itemId = currentToDelete.value?.id
+
+	if (!itemId) {
 		return
 	}
 	const openDbRequest = indexedDB.open('linksDb', 1)
@@ -29,7 +31,7 @@ const deleteLink = () => {
 		const transaction = db.transaction('links', 'readwrite')
 		const objectStore = transaction.objectStore('links')
 
-		const deleteOperation = objectStore.delete(currentToDelete.value.id)
+		const deleteOperation = objectStore.delete(itemId)
 		deleteOperation.onsuccess = (ev) => {
 			console.log(ev)
 			fetchSavedNotes()
