@@ -70,7 +70,7 @@ const fetchSavedNotes = () => {
 
 // Share a given link
 const shareLink = (url: string) => {
-	if (navigator.canShare()) {
+	if (navigator.canShare({ url })) {
 		navigator.share({
 			url,
 		})
