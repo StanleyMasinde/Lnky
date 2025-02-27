@@ -57,7 +57,7 @@ const fetchSavedNotes = () => {
 		cursorRequest.onsuccess = (event) => {
 			const cursor: IDBCursorWithValue | null = (event.target as IDBRequest).result
 			if (cursor) {
-				savedLinks.value = [...savedLinks.value, { id: cursor.key, link: cursor.value }]
+				savedLinks.value.unshift({ id: cursor.key, link: cursor.value })
 				cursor.continue()
 			}
 		}
