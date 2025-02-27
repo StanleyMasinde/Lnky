@@ -68,6 +68,19 @@ const fetchSavedNotes = () => {
 	request.onerror = () => console.error('Error opening IndexedDB')
 }
 
+// Share a given link
+const shareLink = (url: string) => {
+	if (navigator.canShare()) {
+		navigator.share({
+			url,
+		})
+	}
+	else {
+		// Debug only
+		console.log('Cannot share url', url)
+	}
+}
+
 onMounted(() => {
 	fetchSavedNotes()
 })
@@ -105,10 +118,19 @@ onMounted(() => {
 								<small class="text-xs font-semibold">{{ new Date(link.link.createdAt) }}</small>
 							</div>
 
+							<hr class="my-2">
+
 							<!-- Actions -->
-							<div class="flex flex-col mt-2">
+							<div class="flex flex-col gap-1 mt-2">
+								<button @click.prevent="shareLink(link.link.url)"
+									class="bg-primary text-white py-1 rounded-lg">
+									Share
+								</button>
+
 								<button @click.prevent="confirmDelete(link)"
-									class="bg-red-500 text-white rounded-lg py-1">Delete</button>
+									class="bg-red-500 text-white rounded-lg py-1">
+									Delete
+								</button>
 							</div>
 						</div>
 					</TransitionGroup>
