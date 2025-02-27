@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Ref } from 'vue'
-import { ref, onMounted, TransitionGroup } from 'vue'
+import { ref, onMounted } from 'vue'
 
 interface SavedLink {
 	id: IDBValidKey
