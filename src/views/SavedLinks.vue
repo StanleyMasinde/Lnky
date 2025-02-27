@@ -117,10 +117,11 @@ onMounted(() => {
 		</div>
 
 		<!-- dialog for the delete confirmation -->
-		<dialog popover ref="deleteRef" class="p-6 bg-white rounded-lg shadow-lg w-96">
+		<dialog popover ref="deleteRef" class="rounded-lg shadow-lg p-2 md:max-w-9/10 mx-auto my-auto">
 			<div>
 				<h3 class="text-lg font-semibold">Are you sure ?</h3>
 				<p class="text-sm text-gray-600">This link will be lost forever</p>
+				<p class="line-clamp-1 text-sm">{{ currentToDelete?.link.url }}</p>
 
 				<hr>
 
@@ -129,8 +130,9 @@ onMounted(() => {
 						No, Don't delete
 					</button>
 
-					<button @click.prevent="deleteLink()" class="px-4 py-2 bg-red-600 text-white rounded-lg">Yes,
-						delete</button>
+					<button @click.prevent="deleteLink()" class="px-4 py-2 bg-red-600 text-white rounded-lg">
+						Yes, delete
+					</button>
 				</div>
 			</div>
 		</dialog>

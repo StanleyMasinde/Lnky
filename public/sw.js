@@ -6,7 +6,7 @@
  *  ----------------------------------------------------------
  */
 
-const cacheVersion = 'v0.9.0'
+const cacheVersion = 'v0.9.1'
 const staticCache = [
 	'/',
 	'/icons/favicon.ico',
@@ -16,6 +16,9 @@ const staticCache = [
 	'/icons/icon-256x256.png',
 	'/icons/icon-384x384.png',
 	'/icons/icon-512x512.png',
+	'/icons/apple-touch-icon.png',
+	'/icons/icon-192-maskable.png',
+	'/icons/icon-512-maskable.png',
 ]
 
 // Handle fetch
