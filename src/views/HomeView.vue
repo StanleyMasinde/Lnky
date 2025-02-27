@@ -1,24 +1,19 @@
 <script setup lang="ts">
 import type { Ref } from 'vue'
 import { ref } from 'vue'
+import { useCleanLink } from '../composables/cleanLink'
 
 const sanitizedLink: Ref<string | undefined> = ref()
 const currentLink: Ref<string | undefined> = ref()
 const popoverElement = ref<HTMLDivElement>()
 // Listen to changes on the
-const cleanLink = () => {
+const cleanLink = async () => {
 	if (!currentLink.value) return // Ensure the input link is not null or undefined
 
-	const regex = /[?&](utm_[^=]+|pk_[^=]+|fbclid|feature|si|t|src|ref|cmp|cmp_id|ref_source|ref_medium|ref_campaign|ref_content|ref_term|gclid|msclkid|yclid|igshid|li_fat_id|ttclid|sa|ust|ab_channel|source|sa=D|source=editors|ab|referral|ref_tag|referring_source|click_id|ad_id|tag|q)=([^&]+)/gi
-
-	// Remove all matched query parameters from the link
-	let cleanedLink = currentLink.value.replace(regex, '')
-
-	// Clean up any trailing '?' or '&' at the end of the URL
-	cleanedLink = cleanedLink.replace(/[?&]$/, '')
+	const cleanedLink = await useCleanLink(currentLink.value)
 
 	// Set the cleaned URL
-	sanitizedLink.value = cleanedLink
+	sanitizedLink.value = cleanedLink.toString()
 
 	// Save the link in the local database
 	saveLinkInDb(sanitizedLink.value)
