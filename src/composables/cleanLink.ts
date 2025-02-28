@@ -32,7 +32,18 @@ const shortDomains = [
 
 const expandUrl = async (shortUrl: string) => {
 	try {
-		const response = await fetch(shortUrl, { redirect: 'manual', method: 'GET' })
+		const response = await fetch(shortUrl, {
+			redirect: 'follow',
+			method: 'HEAD',
+			mode: 'cors',
+		})
+
+		const redirectHeader = response.headers.get('location')
+
+		if (redirectHeader) {
+			return redirectHeader
+		}
+
 		return response.url
 	}
 	catch (e) {
@@ -40,27 +51,38 @@ const expandUrl = async (shortUrl: string) => {
 	}
 }
 
+// Remove all the tracking query params
 const removeTrackers = (dirtyLink: string) => {
-	const url = new URL(dirtyLink)
+	const urlObject = new URL(dirtyLink)
+	const searchParams = new URLSearchParams(urlObject.search)
 
-	const allParams = Object.values(trackingPatterns).flat()
-	const currentParams = url.searchParams
-
-	currentParams.forEach((param) => {
-		if (allParams.includes(param)) {
-			currentParams.delete(param)
-		}
+	Object.values(trackingPatterns).flat().forEach((trackingParam) => {
+		searchParams.delete(trackingParam)
 	})
 
-	return url
+	urlObject.search = searchParams.toString()
+
+	return urlObject.toString()
 }
 
-export async function useCleanLink(link: string) {
-	let url = link
+export const useCleanLink = async (link: string) => {
+	let url: string = link
 	const domain = new URL(url).hostname
 	if (shortDomains.includes(domain)) {
-		url = await expandUrl(link)
-		console.log('haha', url)
+		const expanded = await expandUrl(link)
+		if (expanded) {
+			url = expanded
+		}
+	}
+
+	// Special case for meta apps like facebook use a forward slash /share for this.
+	// For now, I'll keep it simple. I can add the logic in the block above but I don't want to
+	// bloat it since it will grow later.
+	if (url.includes('facebook') || url.includes('instagram')) {
+		const expanded = await expandUrl(link)
+		if (expanded) {
+			url = expanded
+		}
 	}
 
 	return removeTrackers(url)
