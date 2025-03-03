@@ -12,22 +12,21 @@ const trackingPatterns = {
 	Pinterest: ['epik', 'utm_source', 'utm_medium', 'utm_campaign'],
 	Snapchat: ['sc_ref', 'utm_source', 'utm_medium'],
 	WhatsApp: ['utm_source', 'utm_medium', 'utm_campaign'],
+	Bing: ['msclkid'],
+	Yahoo: ['soc_src', 'soc_trk'],
+	Adobe: ['cid', 'aid'],
+	HubSpot: ['__hssc', '__hstc', 'hsCtaTracking', 'hsLang', 'hsmi', 'hsenc'],
+	Marketo: ['mkt_tok'],
+	MailChimp: ['mc_cid', 'mc_eid'],
+	CampaignMonitor: ['cm_mmca', 'cm_mmca1', 'cm_mmca2'],
+	Pardot: ['piwik_campaign', 'piwik_kwd'],
+	Eloqua: ['elqTrackId', 'elqTrack', 'elqaid', 'elqat'],
+	UTM: ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'],
+	General: ['ref', 'src', 'aff_id', 'affiliate_id', 'campaign', 'adgroup', 'ad', 'creative', 'keyword', 'matchtype', 'network', 'placement', 'target', 'device', 'devicemodel', 'gclid', 'dclid', 'fbclid', 'msclkid', 'twclid', 'igshid', 'scid', 'sclid', 'yclid'],
 }
 
 const shortDomains = [
-	'l.facebook.com', 'fb.watch', 'm.me',
-	'goo.gl',
-	'youtu.be',
-	't.co',
-	'instagram.com/reel', 'instagram.com/stories',
-	'vm.tiktok.com',
-	'lnkd.in',
-	'amzn.to',
-	'binged.it',
-	'rdt.co',
-	'pin.it',
-	'story.snapchat.com',
-	'wa.me',
+	'bit.ly', 'j.mp', 'bit.do', 'is.gd', 'soo.gd', 's2r.co', 'tinyurl.com', 't2mio.com', 'cutt.ly', 'v.gd', 'shorte.st', 'clk.sh', 'bl.ink', 't.ly', 'short.io', 'buff.ly', 'adf.ly', 'ow.ly', 'mcaf.ee', 'rebrandly.com', 'yourls.org', 'po.st', 'qr.ae', 'soo.nr', 'snip.ly', 'lnk.to', 'trib.al', 'tiny.cc', 'shorturl.at', 'urlzs.com', 'x.co', 'qr.net', 'cli.gs', 'chilp.it', 'u.to', 'tr.im', 'moourl.com', 'doiop.com', 'l9.eu', '2.gp', 'shorl.com', 'budurl.com', 'snurl.com', 'durl.me', 'shortn.me', 'shrinkurl.org', 'shorty.url', 'url.ie', 'url.co.uk', 'urlcut.com', 'urlhawk.com', 'urli.nl', 'urltea.com', 'zipurl.com', 'zapt.in', 'zi.ma', 'zurl.ws', 'zz.gd', 't.co', 'goo.gl', 'tiny.cc', 'ow.ly', 'bit.do', 'mcaf.ee', 'su.pr', 'lnkd.in', 'db.tt', 'qr.ae', 'adf.ly', 'bitly.com', 'tinyurl.com', 'is.gd', 'soo.gd', 's2r.co', 't2mio.com', 'cutt.ly', 'v.gd', 'shorte.st', 'clk.sh', 'bl.ink', 't.ly', 'short.io', 'buff.ly', 'rebrandly.com', 'yourls.org', 'po.st', 'soo.nr', 'snip.ly', 'lnk.to', 'trib.al', 'shorturl.at', 'urlzs.com', 'x.co', 'qr.net', 'cli.gs', 'chilp.it', 'u.to', 'tr.im', 'moourl.com', 'doiop.com', 'l9.eu', '2.gp', 'shorl.com', 'budurl.com', 'snurl.com', 'durl.me', 'shortn.me', 'shrinkurl.org', 'shorty.url', 'url.ie', 'url.co.uk', 'urlcut.com', 'urlhawk.com', 'urli.nl', 'urltea.com', 'zipurl.com', 'zapt.in', 'zi.ma', 'zurl.ws', 'zz.gd', 't.co', 'goo.gl', 'tiny.cc', 'ow.ly', 'bit.do', 'mcaf.ee', 'su.pr', 'lnkd.in', 'db.tt', 'qr.ae', 'adf.ly', 'bitly.com', 'tinyurl.com', 'is.gd', 'soo.gd', 's2r.co', 't2mio.com', 'cutt.ly', 'v.gd', 'shorte.st', 'clk.sh', 'bl.ink', 't.ly', 'short.io', 'buff.ly', 'rebrandly.com', 'yourls.org', 'po.st', 'soo.nr', 'snip.ly', 'lnk.to', 'trib.al', 'shorturl.at', 'urlzs.com', 'x.co', 'qr.net', 'cli.gs', 'chilp.it', 'u.to', 'tr.im', 'moourl.com', 'doiop.com', 'l9.eu', '2.gp', 'shorl.com', 'budurl.com', 'snurl.com', 'durl.me', 'shortn.me', 'shrinkurl.org', 'shorty.url', 'url.ie', 'url.co.uk', 'urlcut.com', 'urlhawk.com', 'urli.nl', 'urltea.com', 'zipurl.com', 'zapt.in', 'zi.ma', 'zurl.ws', 'zz.gd', 't.co', 'goo.gl', 'tiny.cc', 'ow.ly', 'bit.do', 'mcaf.ee', 'su.pr', 'lnkd.in', 'db.tt', 'qr.ae', 'adf.ly', 'bitly.com', 'tinyurl.com', 'is.gd', 'soo.gd', 's2r.co', 't2mio.com', 'cutt.ly', 'v.gd', 'shorte.st', 'clk.sh', 'bl.ink', 't.ly', 'short.io', 'buff.ly', 'rebrandly.com', 'yourls.org', 'po.st', 'soo.nr', 'snip.ly', 'lnk.to', 'trib.al', 'shorturl.at', 'urlzs.com', 'x.co', 'qr.net', 'cli.gs', 'chilp.it', 'u.to', 'tr.im', 'moourl.com', 'doiop.com', 'l9.eu', '2.gp', 'shorl.com', 'budurl.com', 'snurl.com', 'durl.me', 'shortn.me', 'shrinkurl.org', 'shorty.url', 'url.ie', 'url.co.uk', 'urlcut.com', 'urlhawk.com', 'urli.nl', 'urltea.com', 'zipurl.com', 'zapt.in', 'zi.ma', 'zurl.ws', 'zz.gd', 't.co', 'goo.gl', 'tiny.cc', 'ow.ly', 'bit.do', 'mcaf.ee', 'su.pr', 'lnkd.in', 'db.tt', 'qr.ae', 'adf.ly', 'bitly.com', 'tinyurl.com', 'is.gd', 'soo.gd', 's2r.co', 't2mio.com', 'cutt.ly', 'v.gd', 'shorte.st', 'clk.sh', 'bl.ink', 't.ly', 'short.io', 'buff.ly', 'rebrandly.com', 'yourls.org', 'po.st', 'soo.nr', 'snip.ly', 'lnk.to', 'trib.al', 'shorturl.at', 'urlzs.com', 'x.co', 'qr.net', 'cli.gs', 'chilp.it', 'u.to', 'tr.im', 'moourl.com', 'doiop.com', 'l9.eu', '2.gp', 'shorl.com', 'budurl.com', 'snurl.com', 'durl.me', 'shortn.me', 'shrinkurl.org', 'shorty.url', 'url.ie', 'url.co.uk', 'urlcut.com', 'urlhawk.com', 'urli.nl', 'urltea.com', 'zipurl.com', 'zapt.in', 'zi.ma', 'zurl.ws', 'zz.gd', 't.co', 'goo.gl', 'tiny.cc', 'ow.ly', 'bit.do', 'mcaf.ee', 'su.pr', 'lnkd.in',
 ]
 
 const expandUrl = async (shortUrl: string) => {
