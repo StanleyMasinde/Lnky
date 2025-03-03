@@ -2,10 +2,19 @@
 import type { Ref } from 'vue'
 import { ref } from 'vue'
 import { useCleanLink } from '../composables/cleanLink'
+import { useRoute } from 'vue-router'
+
+const $route = useRoute()
+const sharedLink: string = $route.query.link as string
 
 const sanitizedLink: Ref<string | undefined> = ref()
 const currentLink: Ref<string | undefined> = ref()
 const popoverElement = ref<HTMLDivElement>()
+
+if (sharedLink) {
+	currentLink.value = sharedLink.trim()
+}
+
 // Listen to changes on the
 const cleanLink = async () => {
 	if (!currentLink.value) return // Ensure the input link is not null or undefined
