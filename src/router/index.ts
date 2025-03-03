@@ -19,11 +19,6 @@ const router = createRouter({
 			name: 'about',
 			component: () => import('../views/SavedLinks.vue'),
 		},
-		{
-			path: '/handle-link',
-			name: 'handle-link',
-			component: () => import('../views/HandleLink.vue'),
-		},
 	],
 })
 
