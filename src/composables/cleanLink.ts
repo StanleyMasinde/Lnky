@@ -32,19 +32,13 @@ const shortDomains = [
 
 const expandUrl = async (shortUrl: string) => {
 	try {
-		const response = await fetch(shortUrl, {
+		const response = await fetch(`https://lnky.api.stanleymasinde.com/?url=${shortUrl}`, {
 			redirect: 'follow',
-			method: 'HEAD',
+			method: 'GET',
 			mode: 'cors',
 		})
 
-		const redirectHeader = response.headers.get('location')
-
-		if (redirectHeader) {
-			return redirectHeader
-		}
-
-		return response.url
+		return await response.text()
 	}
 	catch (e) {
 		console.log(e)
