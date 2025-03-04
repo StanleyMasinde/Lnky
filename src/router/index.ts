@@ -20,9 +20,9 @@ const router = createRouter({
 			component: () => import('../views/SavedLinks.vue'),
 		},
 		{
-			path: '/handle-link',
-			name: 'handle-link',
-			component: () => import('../views/HandleLink.vue'),
+			path: '/:pathMatch(.*)*',
+			name: 'NotFound',
+			component: () => import('../views/NotFound.vue'),
 		},
 	],
 })

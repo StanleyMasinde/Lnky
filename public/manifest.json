@@ -10,7 +10,7 @@
 	"dir": "ltr",
 	"lang": "en",
 	"share_target": {
-		"action": "/handle-link",
+		"action": "/",
 		"method": "GET",
 		"enctype": "application/x-www-form-urlencoded",
 		"params": {
