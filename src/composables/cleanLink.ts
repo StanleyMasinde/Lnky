@@ -25,9 +25,36 @@ const trackingPatterns = {
 	General: ['ref', 'src', 'aff_id', 'affiliate_id', 'campaign', 'adgroup', 'ad', 'creative', 'keyword', 'matchtype', 'network', 'placement', 'target', 'device', 'devicemodel', 'gclid', 'dclid', 'fbclid', 'msclkid', 'twclid', 'igshid', 'scid', 'sclid', 'yclid'],
 }
 
-const shortDomains = [
-	'youtu.be', 'pin.it', 'a.co', 'maps.app.goo.gl', 'bit.ly', 'j.mp', 'bit.do', 'is.gd', 'soo.gd', 's2r.co', 'tinyurl.com', 't2mio.com', 'cutt.ly', 'v.gd', 'shorte.st', 'clk.sh', 'bl.ink', 't.ly', 'short.io', 'buff.ly', 'adf.ly', 'ow.ly', 'mcaf.ee', 'rebrandly.com', 'yourls.org', 'po.st', 'qr.ae', 'soo.nr', 'snip.ly', 'lnk.to', 'trib.al', 'tiny.cc', 'shorturl.at', 'urlzs.com', 'x.co', 'qr.net', 'cli.gs', 'chilp.it', 'u.to', 'tr.im', 'moourl.com', 'doiop.com', 'l9.eu', '2.gp', 'shorl.com', 'budurl.com', 'snurl.com', 'durl.me', 'shortn.me', 'shrinkurl.org', 'shorty.url', 'url.ie', 'url.co.uk', 'urlcut.com', 'urlhawk.com', 'urli.nl', 'urltea.com', 'zipurl.com', 'zapt.in', 'zi.ma', 'zurl.ws', 'zz.gd', 't.co', 'goo.gl', 'tiny.cc', 'ow.ly', 'bit.do', 'mcaf.ee', 'su.pr', 'lnkd.in', 'db.tt', 'qr.ae', 'adf.ly', 'bitly.com', 'tinyurl.com', 'is.gd', 'soo.gd', 's2r.co', 't2mio.com', 'cutt.ly', 'v.gd', 'shorte.st', 'clk.sh', 'bl.ink', 't.ly', 'short.io', 'buff.ly', 'rebrandly.com', 'yourls.org', 'po.st', 'soo.nr', 'snip.ly', 'lnk.to', 'trib.al', 'shorturl.at', 'urlzs.com', 'x.co', 'qr.net', 'cli.gs', 'chilp.it', 'u.to', 'tr.im', 'moourl.com', 'doiop.com', 'l9.eu', '2.gp', 'shorl.com', 'budurl.com', 'snurl.com', 'durl.me', 'shortn.me', 'shrinkurl.org', 'shorty.url', 'url.ie', 'url.co.uk', 'urlcut.com', 'urlhawk.com', 'urli.nl', 'urltea.com', 'zipurl.com', 'zapt.in', 'zi.ma', 'zurl.ws', 'zz.gd', 't.co', 'goo.gl', 'tiny.cc', 'ow.ly', 'bit.do', 'mcaf.ee', 'su.pr', 'lnkd.in', 'db.tt', 'qr.ae', 'adf.ly', 'bitly.com', 'tinyurl.com', 'is.gd', 'soo.gd', 's2r.co', 't2mio.com', 'cutt.ly', 'v.gd', 'shorte.st', 'clk.sh', 'bl.ink', 't.ly', 'short.io', 'buff.ly', 'rebrandly.com', 'yourls.org', 'po.st', 'soo.nr', 'snip.ly', 'lnk.to', 'trib.al', 'shorturl.at', 'urlzs.com', 'x.co', 'qr.net', 'cli.gs', 'chilp.it', 'u.to', 'tr.im', 'moourl.com', 'doiop.com', 'l9.eu', '2.gp', 'shorl.com', 'budurl.com', 'snurl.com', 'durl.me', 'shortn.me', 'shrinkurl.org', 'shorty.url', 'url.ie', 'url.co.uk', 'urlcut.com', 'urlhawk.com', 'urli.nl', 'urltea.com', 'zipurl.com', 'zapt.in', 'zi.ma', 'zurl.ws', 'zz.gd', 't.co', 'goo.gl', 'tiny.cc', 'ow.ly', 'bit.do', 'mcaf.ee', 'su.pr', 'lnkd.in', 'db.tt', 'qr.ae', 'adf.ly', 'bitly.com', 'tinyurl.com', 'is.gd', 'soo.gd', 's2r.co', 't2mio.com', 'cutt.ly', 'v.gd', 'shorte.st', 'clk.sh', 'bl.ink', 't.ly', 'short.io', 'buff.ly', 'rebrandly.com', 'yourls.org', 'po.st', 'soo.nr', 'snip.ly', 'lnk.to', 'trib.al', 'shorturl.at', 'urlzs.com', 'x.co', 'qr.net', 'cli.gs', 'chilp.it', 'u.to', 'tr.im', 'moourl.com', 'doiop.com', 'l9.eu', '2.gp', 'shorl.com', 'budurl.com', 'snurl.com', 'durl.me', 'shortn.me', 'shrinkurl.org', 'shorty.url', 'url.ie', 'url.co.uk', 'urlcut.com', 'urlhawk.com', 'urli.nl', 'urltea.com', 'zipurl.com', 'zapt.in', 'zi.ma', 'zurl.ws', 'zz.gd', 't.co', 'goo.gl', 'tiny.cc', 'ow.ly', 'bit.do', 'mcaf.ee', 'su.pr', 'lnkd.in', 'db.tt', 'qr.ae', 'adf.ly', 'bitly.com', 'tinyurl.com', 'is.gd', 'soo.gd', 's2r.co', 't2mio.com', 'cutt.ly', 'v.gd', 'shorte.st', 'clk.sh', 'bl.ink', 't.ly', 'short.io', 'buff.ly', 'rebrandly.com', 'yourls.org', 'po.st', 'soo.nr', 'snip.ly', 'lnk.to', 'trib.al', 'shorturl.at', 'urlzs.com', 'x.co', 'qr.net', 'cli.gs', 'chilp.it', 'u.to', 'tr.im', 'moourl.com', 'doiop.com', 'l9.eu', '2.gp', 'shorl.com', 'budurl.com', 'snurl.com', 'durl.me', 'shortn.me', 'shrinkurl.org', 'shorty.url', 'url.ie', 'url.co.uk', 'urlcut.com', 'urlhawk.com', 'urli.nl', 'urltea.com', 'zipurl.com', 'zapt.in', 'zi.ma', 'zurl.ws', 'zz.gd', 't.co', 'goo.gl', 'tiny.cc', 'ow.ly', 'bit.do', 'mcaf.ee', 'su.pr', 'lnkd.in',
-]
+const shortDomains: string[] = []
+// Fetch short Links from IDB
+const fetchLinksReq = new Promise((resolve, reject) => {
+	const idbRequest = window.indexedDB.open('linksDb')
+	idbRequest.onsuccess = (event) => {
+		const database: IDBDatabase = (event.target as IDBOpenDBRequest).result
+
+		const tx = database.transaction('shortLinks', 'readonly')
+		const linksStore = tx.objectStore('shortLinks')
+		const linksCursor = linksStore.openCursor()
+
+		linksCursor.onsuccess = (event) => {
+			const cursor = (event.target as IDBRequest).result as IDBCursorWithValue
+
+			if (cursor) {
+				console.log(cursor)
+
+				shortDomains.unshift(cursor.value.domain)
+
+				cursor.continue()
+			}
+
+			resolve('OK')
+		}
+
+		linksCursor.onerror = (err) => {
+			reject(err)
+		}
+	}
+})
 
 const expandUrl = async (shortUrl: string) => {
 	try {
@@ -59,6 +86,8 @@ const removeTrackers = (dirtyLink: string) => {
 }
 
 export const useCleanLink = async (link: string) => {
+	await fetchLinksReq
+
 	let url: string = link
 	const domain = new URL(url).hostname
 	if (shortDomains.includes(domain)) {

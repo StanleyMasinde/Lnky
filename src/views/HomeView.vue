@@ -62,7 +62,7 @@ const copyToClipBoard = async () => {
 }
 
 const saveLinkInDb = (link: string) => {
-	const request = indexedDB.open('linksDb', 1)
+	const request = indexedDB.open('linksDb', 2)
 
 	request.onupgradeneeded = (event) => {
 		const database = (event.target as IDBOpenDBRequest).result

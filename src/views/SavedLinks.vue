@@ -23,7 +23,7 @@ const deleteLink = () => {
 	if (!itemId) {
 		return
 	}
-	const openDbRequest = indexedDB.open('linksDb', 1)
+	const openDbRequest = indexedDB.open('linksDb', 2)
 
 	openDbRequest.onsuccess = (event) => {
 		const db = (event.target as IDBOpenDBRequest)?.result as IDBDatabase
@@ -43,7 +43,7 @@ const deleteLink = () => {
 // Get all the saved link
 const fetchSavedNotes = () => {
 	savedLinks.value = []
-	const request = indexedDB.open('linksDb', 1)
+	const request = indexedDB.open('linksDb', 2)
 
 	request.onsuccess = (event) => {
 		const db = (event.target as IDBOpenDBRequest)?.result as IDBDatabase
