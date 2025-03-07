@@ -42,6 +42,9 @@ request.onupgradeneeded = (event) => {
 	const database = (event.target as IDBOpenDBRequest)?.result as IDBDatabase
 	console.log(`Upgrading to version ${database.version}`)
 
+	const objectStore = database.createObjectStore('links', { autoIncrement: true })
+	objectStore.createIndex('url', 'url', { unique: true })
+	objectStore.createIndex('createdAt', 'createdAt')
 	const shortLinksStore = database.createObjectStore('shortLinks', { autoIncrement: true })
 	shortLinksStore.createIndex('domain', 'domain', { unique: true })
 }
