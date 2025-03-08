@@ -3,6 +3,7 @@ import type { Ref } from 'vue'
 import { ref } from 'vue'
 import { useCleanLink } from '../composables/cleanLink'
 import { useRoute } from 'vue-router'
+import { useIsLoading } from '@/composables/state'
 
 const $route = useRoute()
 const sharedLink: string = $route.query.link as string
@@ -133,7 +134,7 @@ const saveLinkInDb = (link: string) => {
 								<button :disabled="!currentLink" data-cy="clean-button"
 									class="bg-primary text-white rounded-lg w-full p-2 cursor-pointer disabled:cursor-not-allowed disabled:bg-primary/50"
 									id="cleanButton">
-									Clean link
+									{{ useIsLoading().value ? "Please wait" : "Remove trackers" }}
 								</button>
 								<button class="w-full bg-secondary rounded-lg text-white" type="reset">Reset</button>
 							</div>

@@ -1,3 +1,5 @@
+import { useIsLoading } from './state'
+
 const trackingPatterns = {
 	Facebook: ['fbclid', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'],
 	Google: ['gclid', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'entry', 'g_ep', 'ucbcb'],
@@ -58,6 +60,7 @@ const fetchLinksReq = new Promise((resolve, reject) => {
 
 const expandUrl = async (shortUrl: string) => {
 	try {
+		useIsLoading().value = true
 		const response = await fetch(`https://lnky.api.stanleymasinde.com/?url=${shortUrl}`, {
 			redirect: 'follow',
 			method: 'GET',
@@ -66,8 +69,8 @@ const expandUrl = async (shortUrl: string) => {
 
 		return await response.text()
 	}
-	catch (e) {
-		console.log(e)
+	finally {
+		useIsLoading().value = false
 	}
 }
 
