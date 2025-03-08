@@ -33,10 +33,11 @@ const handleFetch = async (request) => {
 	console.log('There is no cache for', request)
 	try {
 		const networkResponse = await fetch(request)
-		const clonedResponse = networkResponse.clone()
-
-		const cache = await caches.open(cacheVersion)
-		await cache.put(request, clonedResponse)
+		if (!request.url.includes('lnky.api.stanleymasinde.com')) { // Do not cache link expander reqs
+			const clonedResponse = networkResponse.clone()
+			const cache = await caches.open(cacheVersion)
+			await cache.put(request, clonedResponse)
+		}
 
 		return networkResponse
 	}
