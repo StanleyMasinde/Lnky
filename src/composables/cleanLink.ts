@@ -1,5 +1,7 @@
 import { useIsLoading } from './state'
 
+console.log('This has loaded: Composable')
+
 const trackingPatterns = {
 	Facebook: ['fbclid', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'],
 	Google: ['gclid', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'entry', 'g_ep', 'ucbcb'],
@@ -30,7 +32,7 @@ const trackingPatterns = {
 const shortDomains: string[] = []
 // Fetch short Links from IDB
 const fetchLinksReq = new Promise((resolve, reject) => {
-	const idbRequest = window.indexedDB.open('linksDb')
+	const idbRequest = window.indexedDB.open('linksDb', 2)
 	idbRequest.onsuccess = (event) => {
 		const database: IDBDatabase = (event.target as IDBOpenDBRequest).result
 

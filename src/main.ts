@@ -1,8 +1,12 @@
 import './assets/style.css'
 
+console.log('Main js has loaded')
+
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
+
+console.log('Main js has loaded: After imports')
 
 const shortDomainsReq = await fetch('https://raw.githubusercontent.com/PeterDaveHello/url-shorteners/refs/heads/master/list')
 const resText = await shortDomainsReq.text()
