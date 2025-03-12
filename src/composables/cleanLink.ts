@@ -68,8 +68,15 @@ const expandUrl = async (shortUrl: string) => {
 			method: 'GET',
 			mode: 'cors',
 		})
+		const linkText = await response.text()
 
-		return await response.text()
+		const url = new URL(linkText)
+		if (url.searchParams.get('continue')) {
+			const cleanUrl = decodeURIComponent(url.searchParams.get('continue') || 'http://example.com')
+			return cleanUrl.toString()
+		}
+
+		return url.toString()
 	}
 	finally {
 		useIsLoading().value = false
