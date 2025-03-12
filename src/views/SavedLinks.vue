@@ -111,7 +111,7 @@ onMounted(() => {
 					<TransitionGroup name="list" tag="div" v-else>
 						<div v-for="(link, index) in savedLinks" class="border rounded-lg p-2 m-4" :key="index">
 							<div class="line-clamp-1">
-								<p class="text-lg">{{ link.link.url }}</p>
+								<a class="text-lg underline hover:text-primary" :href="link.link.url" target="_blank">{{ link.link.url }}</a>
 							</div>
 
 							<div>
