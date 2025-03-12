@@ -17,11 +17,11 @@ iOS does not play nice with PWAs, you'll have to open the app from your homescre
 - Copy or share
 
 ## Features
-1. Removes trackers from links.
-2. Expands short URLs - WIP.
-3. Saves links offline.
-4. Export links to CSV - WIP
-5. Import links from CSV - WIP
+- [x] Removes trackers from links.
+- [x] Expands short URLs.
+- [x] Saves links offline.
+- [ ] Export links to CSV
+- [ ] Import links from CSV
 
 
 More docs coming. This is still WIP. 
