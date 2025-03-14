@@ -14,9 +14,7 @@
 		"method": "GET",
 		"enctype": "application/x-www-form-urlencoded",
 		"params": {
-			"url": "link",
-			"title": "title",
-			"text": "text"
+			"url": "link"
 		}
 	},
 	"icons": [
