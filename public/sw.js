@@ -6,7 +6,7 @@
  *  ----------------------------------------------------------
  */
 
-const cacheVersion = '1.0.0-beta.6'
+const cacheVersion = 'v1.0.0-alpha.0'
 const staticCache = [
 	'/',
 	'/icons/favicon.ico',

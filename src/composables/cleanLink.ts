@@ -5,7 +5,7 @@ const trackingPatterns = {
 	Google: ['gclid', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'entry', 'g_ep', 'ucbcb'],
 	YouTube: ['si', 'feature', 'app', 't'],
 	Twitter: ['ref_src', 's', 't'],
-	Instagram: ['igshid', 'utm_source', 'utm_medium', 'utm_campaign'],
+	Instagram: ['igshid', 'utm_source', 'utm_medium', 'utm_campaign', 'igsh'],
 	TikTok: ['_r', '_t', 'refer', 'is_from_webapp', 'sender_device'],
 	LinkedIn: ['trk', 'utm_source', 'utm_medium', 'utm_campaign', 'rcm'],
 	Amazon: ['tag', 'ascsubtag', 'ref', 'pf_rd_p', 'pf_rd_r', 'social_share', 'ref_', 'starsLeft', 'psc'],
