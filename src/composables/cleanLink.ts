@@ -1,7 +1,5 @@
 import { useIsLoading } from './state'
 
-console.log('This has loaded: Composable')
-
 const trackingPatterns = {
 	Facebook: ['fbclid', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'rdid', 'share_url'],
 	Google: ['gclid', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'entry', 'g_ep', 'ucbcb'],
