@@ -4,8 +4,6 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 
-console.log('Main js has loaded: After imports')
-
 const shortDomainsReq = await fetch('https://raw.githubusercontent.com/PeterDaveHello/url-shorteners/refs/heads/master/list')
 const resText = await shortDomainsReq.text()
 const shortDomains = resText.split('\n').filter(d => URL.canParse(`https://${d}`))
@@ -22,7 +20,6 @@ if (import.meta.env.PROD && navigator.serviceWorker) {
 const request = window.indexedDB.open('linksDb', 2)
 
 request.onsuccess = (event) => {
-	console.log('DB opened')
 	currentDB = (event.target as IDBOpenDBRequest).result as IDBDatabase
 	const transation = currentDB.transaction('shortLinks', 'readwrite')
 	const shortLinksStore = transation.objectStore('shortLinks')
@@ -42,7 +39,6 @@ request.onerror = (event) => {
 // The current logic only assumes the former case –– New DB
 request.onupgradeneeded = (event) => {
 	const database = (event.target as IDBOpenDBRequest)?.result as IDBDatabase
-	console.log(`Upgrading to version ${database.version}`)
 
 	if (!database.objectStoreNames.contains('links')) {
 		const objectStore = database.createObjectStore('links', { autoIncrement: true })

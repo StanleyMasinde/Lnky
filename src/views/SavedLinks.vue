@@ -32,8 +32,7 @@ const deleteLink = () => {
 		const objectStore = transaction.objectStore('links')
 
 		const deleteOperation = objectStore.delete(itemId)
-		deleteOperation.onsuccess = (ev) => {
-			console.log(ev)
+		deleteOperation.onsuccess = () => {
 			fetchSavedNotes()
 			deleteRef.value?.close()
 		}
@@ -75,10 +74,6 @@ const shareLink = (url: string) => {
 			url,
 		})
 	}
-	else {
-		// Debug only
-		console.log('Cannot share url', url)
-	}
 }
 
 onMounted(() => {
@@ -111,7 +106,8 @@ onMounted(() => {
 					<TransitionGroup name="list" tag="div" v-else>
 						<div v-for="(link, index) in savedLinks" class="border rounded-lg p-2 m-4" :key="index">
 							<div class="line-clamp-1">
-								<a class="text-lg underline hover:text-primary" :href="link.link.url" target="_blank">{{ link.link.url }}</a>
+								<a class="text-lg underline hover:text-primary" :href="link.link.url" target="_blank">{{
+									link.link.url }}</a>
 							</div>
 
 							<div>

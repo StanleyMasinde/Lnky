@@ -42,8 +42,6 @@ const fetchLinksReq = new Promise((resolve, reject) => {
 			const cursor = (event.target as IDBRequest).result as IDBCursorWithValue
 
 			if (cursor) {
-				console.log(cursor)
-
 				shortDomains.unshift(cursor.value.domain)
 
 				cursor.continue()

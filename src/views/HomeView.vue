@@ -50,15 +50,10 @@ const share = async () => {
 // Copy to to clipboard
 const copyToClipBoard = async () => {
 	if (sanitizedLink.value) {
-		try {
-			await navigator.clipboard.writeText(sanitizedLink.value)
-			popoverElement.value?.showPopover()
+		await navigator.clipboard.writeText(sanitizedLink.value)
+		popoverElement.value?.showPopover()
 
-			setTimeout(() => popoverElement.value?.hidePopover(), 5000)
-		}
-		catch (err) {
-			console.log(err)
-		}
+		setTimeout(() => popoverElement.value?.hidePopover(), 5000)
 	}
 }
 
@@ -87,10 +82,6 @@ const saveLinkInDb = (link: string) => {
 		}
 
 		const addRequest = objectStore.add(newLink)
-
-		addRequest.onsuccess = () => {
-			console.log('Link saved successfully:', link)
-		}
 
 		addRequest.onerror = (error) => {
 			console.error('Error saving link:', (error.target as IDBRequest).error)

@@ -6,7 +6,7 @@
  *  ----------------------------------------------------------
  */
 
-const cacheVersion = 'v1.0.0-alpha.0'
+const cacheVersion = 'v1.0.0-alpha.1'
 const staticCache = [
 	'/',
 	'/icons/favicon.ico',
@@ -23,14 +23,12 @@ const staticCache = [
 
 // Handle fetch
 const handleFetch = async (request) => {
-	console.log('Fetching', request)
 	const responseFromCache = await caches.match(request)
 
 	if (responseFromCache) {
 		return responseFromCache
 	}
 
-	console.log('There is no cache for', request)
 	try {
 		const networkResponse = await fetch(request)
 		if (!request.url.includes('lnky.api.stanleymasinde.com')) { // Do not cache link expander reqs
@@ -75,6 +73,5 @@ self.addEventListener('activate', (event) => {
 
 // Fetch event
 self.addEventListener('fetch', (event) => {
-	console.log('Fetch event handler', event.request)
 	event.respondWith(handleFetch(event.request))
 })
