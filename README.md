@@ -11,10 +11,12 @@ This tool works best when installed as a PWA.
 - It will automatically remove the tracking ids and give you an option to either copy or share link.
 
 ## How to use iOS
-iOS does not play nice with PWAs, you'll have to open the app from your homescreen;
+iOS does not play nice with PWAs, you'll have to open the app from your homescreen.
 - Paste the link
 - Click clean
 - Copy or share
+
+_I've tried very hard to make the PWA play nice in iOS but it does not seem to be possible. There are so many indefined behaviours. I suggest an Adroid device for full PWA support._
 
 ## Features
 - [x] Removes trackers from links.
