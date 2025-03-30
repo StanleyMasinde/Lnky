@@ -4,17 +4,9 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 
-let shortDomains: string[] = []
-
-const fetchshortDomains = async () => {
-	const shortDomainsReq = await fetch('https://raw.githubusercontent.com/PeterDaveHello/url-shorteners/refs/heads/master/list')
-	const resText = await shortDomainsReq.text()
-	shortDomains = resText.split('\n').filter(d => URL.canParse(`https://${d}`))
-}
-
-fetchshortDomains().then(() => {
-
-})
+const shortDomainsReq = await fetch('https://raw.githubusercontent.com/PeterDaveHello/url-shorteners/refs/heads/master/list')
+const resText = await shortDomainsReq.text()
+const shortDomains = resText.split('\n').filter(d => URL.canParse(`https://${d}`))
 
 // Init and empty IDB variable
 let currentDB: IDBDatabase | undefined
