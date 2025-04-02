@@ -4,6 +4,20 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 
+const universalErrorDiv = document.querySelector('#universalErr')
+
+window.onerror = function (
+	message: string | Event,
+	source?: string,
+	lineno?: number,
+	colno?: number,
+): boolean {
+	if (universalErrorDiv instanceof HTMLElement) {
+		universalErrorDiv.textContent = `Error: ${message} at ${source}:${lineno}:${colno}`
+	}
+
+	return true // Prevent default browser logging
+}
 const shortDomainsReq = await fetch('https://raw.githubusercontent.com/PeterDaveHello/url-shorteners/refs/heads/master/list')
 const resText = await shortDomainsReq.text()
 const shortDomains = resText.split('\n').filter(d => URL.canParse(`https://${d}`))
