@@ -13,11 +13,19 @@ window.onerror = function (
 	colno?: number,
 ): boolean {
 	if (universalErrorDiv instanceof HTMLElement) {
+		universalErrorDiv.hidden = false
 		universalErrorDiv.textContent = `Error: ${message} at ${source}:${lineno}:${colno}`
 	}
 
-	return true // Prevent default browser logging
+	return true
 }
+
+window.addEventListener('unhandledrejection', (event) => {
+	if (universalErrorDiv instanceof HTMLElement) {
+		universalErrorDiv.textContent = `Unhandled Promise Rejection: ${event.reason}`
+	}
+})
+
 const shortDomainsReq = await fetch('https://raw.githubusercontent.com/PeterDaveHello/url-shorteners/refs/heads/master/list')
 const resText = await shortDomainsReq.text()
 const shortDomains = resText.split('\n').filter(d => URL.canParse(`https://${d}`))
@@ -44,11 +52,6 @@ request.onsuccess = (event) => {
 	}
 }
 
-request.onerror = (event) => {
-	// TODO: properly handle this
-	console.error('Ooops, could not open the db', event.target)
-}
-
 // The user has no DB or we have upgraded the version
 // The current logic only assumes the former case –– New DB
 request.onupgradeneeded = (event) => {
@@ -69,5 +72,14 @@ request.onupgradeneeded = (event) => {
 const app = createApp(App)
 
 app.use(router)
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.config.errorHandler = (err, instance, info): void => {
+	if (universalErrorDiv instanceof HTMLElement) {
+		universalErrorDiv.hidden = false
+		// @ts-expect-error This is fine
+		universalErrorDiv.textContent = `Vue Error: ${err.message}`
+	}
+}
 
 app.mount('#app')

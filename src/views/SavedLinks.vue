@@ -3,6 +3,7 @@ import type { Ref } from 'vue'
 import { ref, onMounted } from 'vue'
 
 interface SavedLink {
+	// eslint-disable-next-line no-undef
 	id: IDBValidKey
 	link: { url: string, createdAt: string }
 }
@@ -60,11 +61,7 @@ const fetchSavedNotes = () => {
 				cursor.continue()
 			}
 		}
-
-		cursorRequest.onerror = () => console.error('Error opening cursor')
 	}
-
-	request.onerror = () => console.error('Error opening IndexedDB')
 }
 
 // Share a given link

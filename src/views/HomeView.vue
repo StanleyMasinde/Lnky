@@ -19,7 +19,6 @@ if (sharedLink) {
 // Listen to changes on the
 const cleanLink = async () => {
 	if (!currentLink.value) return // Ensure the input link is not null or undefined
-
 	const cleanedLink = await useCleanLink(currentLink.value)
 
 	// Set the cleaned URL
@@ -36,14 +35,9 @@ const share = async () => {
 
 		// Share using the OS share option.
 		// More ways may be added in future
-		try {
-			await navigator.share({
-				url: sanitizedLink.value,
-			})
-		}
-		catch (err) {
-			console.warn('This needs to be handled', err)
-		}
+		await navigator.share({
+			url: sanitizedLink.value,
+		})
 	}
 }
 
@@ -81,15 +75,7 @@ const saveLinkInDb = (link: string) => {
 			createdAt: new Date().toISOString(),
 		}
 
-		const addRequest = objectStore.add(newLink)
-
-		addRequest.onerror = (error) => {
-			console.error('Error saving link:', (error.target as IDBRequest).error)
-		}
-	}
-
-	request.onerror = (event) => {
-		console.error('Database error:', (event.target as IDBOpenDBRequest).error)
+		objectStore.add(newLink)
 	}
 }
 

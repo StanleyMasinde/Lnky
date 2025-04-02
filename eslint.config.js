@@ -19,6 +19,7 @@ export default [
 			'@stylistic/semi': 'error',
 			'@stylistic/indent': ['error', 'tab'],
 			'@stylistic/no-tabs': 'off',
+			'no-console': 'error',
 		},
 	},
 ]
