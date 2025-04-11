@@ -6,7 +6,7 @@
  *  ----------------------------------------------------------
  */
 
-const cacheVersion = 'v1.1.0'
+const cacheVersion = 'v1.2.0'
 const staticCache = [
 	'/',
 	'/icons/favicon.ico',
@@ -21,6 +21,11 @@ const staticCache = [
 	'/icons/icon-512-maskable.png',
 ]
 
+const notToCacheURLs = [
+	'lnky.api.stanleymasinde.com',
+	'raw.githubusercontent.com/PeterDaveHello/url-shorteners/refs/heads/master/list',
+]
+
 // Handle fetch
 const handleFetch = async (request) => {
 	const responseFromCache = await caches.match(request)
@@ -31,7 +36,7 @@ const handleFetch = async (request) => {
 
 	try {
 		const networkResponse = await fetch(request)
-		if (!request.url.includes('lnky.api.stanleymasinde.com')) { // Do not cache link expander reqs
+		if (!notToCacheURLs.includes(request.url)) { // Do not cache link expander reqs
 			const clonedResponse = networkResponse.clone()
 			const cache = await caches.open(cacheVersion)
 			await cache.put(request, clonedResponse)
