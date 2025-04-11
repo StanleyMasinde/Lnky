@@ -108,7 +108,7 @@ export const useCleanLink = async (link: string) => {
 	// Special case for meta apps like facebook use a forward slash /share for this.
 	// For now, I'll keep it simple. I can add the logic in the block above but I don't want to
 	// bloat it since it will grow later.
-	if (url.includes('facebook') || url.includes('instagram')) {
+	if (url.includes('facebook') || url.includes('instagram') || url.includes('goo.gl')) {
 		const expanded = await expandUrl(link)
 		if (expanded) {
 			url = expanded
