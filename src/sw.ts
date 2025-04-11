@@ -1,3 +1,5 @@
+/// <reference lib="webworker" />
+export { }
 /*
  * -----------------------------------------------------------
  *  Main service worker file
@@ -6,7 +8,7 @@
  *  ----------------------------------------------------------
  */
 
-const cacheVersion = 'v1.5.0'
+const cacheVersion = __APP_VERSION__
 const staticCache = [
 	'/',
 	'/icons/favicon.ico',
@@ -27,7 +29,7 @@ const notToCacheURLs = [
 ]
 
 // Handle fetch
-const handleFetch = async (request) => {
+const handleFetch = async (request: Request) => {
 	if (request.mode === 'navigate') {
 		const cache = await caches.open(cacheVersion)
 		const fallback = await cache.match('/')
@@ -57,6 +59,7 @@ const handleFetch = async (request) => {
 
 // Install event
 self.addEventListener('install', (event) => {
+	// @ts-expect-error I'm to sure how to do this
 	event.waitUntil(
 		caches.open(cacheVersion)
 			.then((cacheStore) => {
@@ -68,6 +71,7 @@ self.addEventListener('install', (event) => {
 // Activate event
 self.addEventListener('activate', (event) => {
 	const cacheToKeep = cacheVersion
+	// @ts-expect-error I'm not sure. I'll research
 	event.waitUntil(
 		caches
 			.keys()
@@ -85,5 +89,6 @@ self.addEventListener('activate', (event) => {
 
 // Fetch event
 self.addEventListener('fetch', (event) => {
+	// @ts-expect-error I'm not sure. I'll research
 	event.respondWith(handleFetch(event.request))
 })

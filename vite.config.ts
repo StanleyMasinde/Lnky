@@ -16,6 +16,18 @@ export default defineConfig({
 	},
 	build: {
 		target: 'esNext',
+		rollupOptions: {
+			input: {
+				main: 'index.html',
+				sw: 'src/sw.ts',
+			},
+			output: {
+				entryFileNames: (asset) => {
+					if (asset.name === 'sw') return 'sw.js' // optional rename
+					return '[name]-[hash].js'
+				},
+			},
+		},
 	},
 	define: {
 		__APP_VERSION__: JSON.stringify(version),
