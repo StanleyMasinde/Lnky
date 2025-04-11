@@ -11,7 +11,7 @@ const trackingPatterns = {
 	Amazon: ['tag', 'ascsubtag', 'ref', 'pf_rd_p', 'pf_rd_r', 'social_share', 'ref_', 'starsLeft', 'psc'],
 	Microsoft: ['msclkid'],
 	Reddit: ['utm_source', 'utm_medium', 'utm_campaign', 'impressionid', 'utm_name', 'p'],
-	Pinterest: ['epik', 'utm_source', 'utm_medium', 'utm_campaign', 'invite_code', 'sfo'],
+	Pinterest: ['epik', 'utm_source', 'utm_medium', 'utm_campaign', 'invite_code', 'sfo', 'sender'],
 	Snapchat: ['sc_ref', 'utm_source', 'utm_medium'],
 	WhatsApp: ['utm_source', 'utm_medium', 'utm_campaign'],
 	Bing: ['msclkid'],
