@@ -6,7 +6,7 @@
  *  ----------------------------------------------------------
  */
 
-const cacheVersion = 'v1.2.0'
+const cacheVersion = 'v1.3.0'
 const staticCache = [
 	'/',
 	'/icons/favicon.ico',
@@ -28,8 +28,13 @@ const notToCacheURLs = [
 
 // Handle fetch
 const handleFetch = async (request) => {
-	const responseFromCache = await caches.match(request)
+	if (request.mode === 'navigate') {
+		const cache = await caches.open(cacheVersion)
+		const fallback = await cache.match('/')
+		if (fallback) return fallback
+	}
 
+	const responseFromCache = await caches.match(request)
 	if (responseFromCache) {
 		return responseFromCache
 	}
@@ -66,12 +71,14 @@ self.addEventListener('activate', (event) => {
 	event.waitUntil(
 		caches
 			.keys()
-			.then((keys) => {
-				keys.forEach((cacheName) => {
-					if (cacheName !== cacheToKeep) {
-						caches.delete(cacheName)
-					}
-				})
+			.then(async (keys) => {
+				await Promise.all(
+					keys.map((cacheName) => {
+						if (cacheName !== cacheToKeep) {
+							return caches.delete(cacheName)
+						}
+					}),
+				)
 			}),
 	)
 })
