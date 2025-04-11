@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
+const version = __APP_VERSION__
 </script>
 
 <template>
@@ -11,4 +12,8 @@ import { RouterView } from 'vue-router'
 			<component :is="Component" />
 		</Transition>
 	</RouterView>
+
+	<footer class="text-sm text-gray-500 text-center p-4">
+		App version: {{ version }}
+	</footer>
 </template>

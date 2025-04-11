@@ -1,3 +1,4 @@
+import { version } from './package.json'
 import { fileURLToPath, URL } from 'node:url'
 
 import { defineConfig } from 'vite'
@@ -15,5 +16,8 @@ export default defineConfig({
 	},
 	build: {
 		target: 'esNext',
+	},
+	define: {
+		__APP_VERSION__: JSON.stringify(version),
 	},
 })
