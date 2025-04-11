@@ -82,7 +82,7 @@ onMounted(() => {
 	<main class="grid grid-cols-12 grid-rows-1 mx-1 md:mx-48">
 		<div class="col-span-12 w-full">
 			<div class="rounded-lg p-5">
-				<div class="flex justify-center mb-2 w-full sticky top-0 bg-white p-2">
+				<div class="flex justify-center mb-2 w-full sticky top-0 bg-white dark:bg-neutral-900 p-2">
 					<RouterLink data-cy="home-link" active-class="bg-primary text-white" to="/"
 						class="w-full text-center p-2 rounded-lg">
 						Home
@@ -121,7 +121,7 @@ onMounted(() => {
 								</button>
 
 								<button @click.prevent="confirmDelete(link)"
-									class="bg-red-500 text-white rounded-lg py-1">
+									class="bg-red-500 text-white  rounded-lg py-1">
 									Delete
 								</button>
 							</div>

@@ -85,7 +85,7 @@ const saveLinkInDb = (link: string) => {
 	<main class="grid grid-cols-12 grid-rows-1  mx-2 md:mx-48">
 		<div class="col-span-12">
 			<div class="border-primary rounded-lg p-5">
-				<div class="flex justify-center mb-2 sticky top-0 bg-white p-2">
+				<div class="flex justify-center mb-2 sticky top-0 bg-white dark:bg-neutral-900 p-2">
 					<RouterLink data-cy="home-link" active-class="bg-primary text-white" to="/"
 						class="w-full text-center p-2 rounded-lg">
 						Home
@@ -103,35 +103,36 @@ const saveLinkInDb = (link: string) => {
 							<div>
 								<label for="linkInput">Paste the link below</label>
 								<input data-cy="url-input" autocomplete="off" v-model="currentLink"
-									class="w-full rounded-lg" type="url" id="linkInput"
+									class="w-full rounded-lg dark:bg-black focus:ring-primary focus:border-primary" type="url" id="linkInput"
 									placeholder="Paste the URL here" />
 							</div>
 
 							<div class="flex gap-1">
 								<button :disabled="!currentLink" data-cy="clean-button"
-									class="bg-primary text-white rounded-lg w-full p-2 cursor-pointer disabled:cursor-not-allowed disabled:bg-primary/50"
+									class="bg-primary text-white  rounded-lg w-full p-2 cursor-pointer disabled:cursor-not-allowed disabled:bg-primary/50"
 									id="cleanButton">
 									{{ useIsLoading().value ? "Please wait" : "Remove trackers" }}
 								</button>
-								<button class="w-full bg-secondary rounded-lg text-white" type="reset">Reset</button>
+								<button class="w-full bg-secondary rounded-lg text-white"
+									type="reset">Reset</button>
 							</div>
 						</div>
 					</form>
 
-					<hr>
+					<hr class="my-5">
 
 					<div class="flex flex-col gap-2 mt-5">
 						<textarea placeholder="Cleaned link will appear here" data-cy="cleaned-url" id="cleanedOutput"
-							:value="sanitizedLink" readonly class="w-full rounded-lg"></textarea>
+							:value="sanitizedLink" readonly class="w-full rounded-lg dark:bg-black focus:border-primary focus:ring-primary"></textarea>
 
 						<div class="grid grid-rows-1 grid-cols-1 md:grid-cols-2 gap-2">
 							<button :disabled="!sanitizedLink" data-cy="share-button" @click.prevent="share"
-								class="border px-4 bg-primary rounded-lg text-white py-2 cursor-pointer w-full disabled:cursor-not-allowed disabled:bg-primary/50">
+								class="border dark:border-black px-4 bg-primary rounded-lg text-white  py-2 cursor-pointer w-full disabled:cursor-not-allowed disabled:bg-primary/50">
 								Share
 							</button>
 
 							<button :disabled="!sanitizedLink" @click.prevent="copyToClipBoard()"
-								class="border px-4 bg-primary rounded-lg text-white py-2 cursor-pointer w-full disabled:cursor-not-allowed disabled:bg-primary/50">
+								class="border dark:border-black px-4 bg-primary rounded-lg text-white  py-2 cursor-pointer w-full disabled:cursor-not-allowed disabled:bg-primary/50">
 								Copy to clipboard
 							</button>
 						</div>
