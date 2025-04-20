@@ -28,30 +28,38 @@ const trackingPatterns = {
 }
 
 const shortDomains: string[] = []
+if (import.meta.env.TEST) {
+	shortDomains.push('youtu.be')
+}
 // Fetch short Links from IDB
 const fetchLinksReq = new Promise((resolve, reject) => {
 	const idbRequest = window.indexedDB.open('linksDb', 2)
 	idbRequest.onsuccess = (event) => {
-		const database: IDBDatabase = (event.target as IDBOpenDBRequest).result
+		if (!import.meta.env.TEST) {
+			const database: IDBDatabase = (event.target as IDBOpenDBRequest).result
 
-		const tx = database.transaction('shortLinks', 'readonly')
-		const linksStore = tx.objectStore('shortLinks')
-		const linksCursor = linksStore.openCursor()
+			const tx = database.transaction('shortLinks', 'readonly')
+			const linksStore = tx.objectStore('shortLinks')
+			const linksCursor = linksStore.openCursor()
 
-		linksCursor.onsuccess = (event) => {
-			const cursor = (event.target as IDBRequest).result as IDBCursorWithValue
+			linksCursor.onsuccess = (event) => {
+				const cursor = (event.target as IDBRequest).result as IDBCursorWithValue
 
-			if (cursor) {
-				shortDomains.unshift(cursor.value.domain)
+				if (cursor) {
+					shortDomains.unshift(cursor.value.domain)
 
-				cursor.continue()
+					cursor.continue()
+				}
+
+				resolve('OK')
 			}
 
-			resolve('OK')
+			linksCursor.onerror = (err) => {
+				reject(err)
+			}
 		}
-
-		linksCursor.onerror = (err) => {
-			reject(err)
+		else {
+			resolve('OK')
 		}
 	}
 })
