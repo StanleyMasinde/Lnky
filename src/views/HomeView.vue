@@ -6,14 +6,29 @@ import { useRoute } from 'vue-router'
 import { useIsLoading } from '@/composables/state'
 
 const $route = useRoute()
-const sharedLink: string = $route.query.link as string
+let sharedLink = null
+const sharedTitle = $route.query.title as string
+const sharedText = $route.query.text as string
+const sharedUrl = $route.query.url as string
+
+if (URL.canParse(sharedTitle)) {
+	sharedLink = new URL(sharedTitle)
+}
+
+if (URL.canParse(sharedText)) {
+	sharedLink = new URL(sharedText)
+}
+
+if (URL.canParse(sharedUrl)) {
+	sharedLink = new URL(sharedUrl)
+}
 
 const sanitizedLink: Ref<string | undefined> = ref()
 const currentLink: Ref<string | undefined> = ref()
 const popoverElement = ref<HTMLDivElement>()
 
 if (sharedLink) {
-	currentLink.value = sharedLink.trim()
+	currentLink.value = sharedLink.toString()
 }
 
 // Listen to changes on the
@@ -103,8 +118,8 @@ const saveLinkInDb = (link: string) => {
 							<div>
 								<label for="linkInput">Paste the link below</label>
 								<input data-cy="url-input" autocomplete="off" v-model="currentLink"
-									class="w-full rounded-lg dark:bg-black focus:ring-primary focus:border-primary" type="url" id="linkInput"
-									placeholder="Paste the URL here" />
+									class="w-full rounded-lg dark:bg-black focus:ring-primary focus:border-primary"
+									type="url" id="linkInput" placeholder="Paste the URL here" />
 							</div>
 
 							<div class="flex gap-1">
@@ -113,8 +128,7 @@ const saveLinkInDb = (link: string) => {
 									id="cleanButton">
 									{{ useIsLoading().value ? "Please wait" : "Remove trackers" }}
 								</button>
-								<button class="w-full bg-secondary rounded-lg text-white"
-									type="reset">Reset</button>
+								<button class="w-full bg-secondary rounded-lg text-white" type="reset">Reset</button>
 							</div>
 						</div>
 					</form>
@@ -123,7 +137,8 @@ const saveLinkInDb = (link: string) => {
 
 					<div class="flex flex-col gap-2 mt-5">
 						<textarea placeholder="Cleaned link will appear here" data-cy="cleaned-url" id="cleanedOutput"
-							:value="sanitizedLink" readonly class="w-full rounded-lg dark:bg-black focus:border-primary focus:ring-primary"></textarea>
+							:value="sanitizedLink" readonly
+							class="w-full rounded-lg dark:bg-black focus:border-primary focus:ring-primary"></textarea>
 
 						<div class="grid grid-rows-1 grid-cols-1 md:grid-cols-2 gap-2">
 							<button :disabled="!sanitizedLink" data-cy="share-button" @click.prevent="share"
