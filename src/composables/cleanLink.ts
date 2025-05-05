@@ -1,7 +1,7 @@
 import { useIsLoading } from './state'
 
 const trackingPatterns = {
-	Facebook: ['fbclid', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'rdid', 'share_url'],
+	Facebook: ['fbclid', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'rdid', 'share_url', 'mibextid'],
 	Google: ['gclid', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'entry', 'g_ep', 'ucbcb'],
 	YouTube: ['si', 'feature', 'app', 't'],
 	Twitter: ['ref_src', 's', 't'],
@@ -75,8 +75,15 @@ const expandUrl = async (shortUrl: string) => {
 		const linkText = await response.text()
 
 		const url = new URL(linkText)
+		// If it is a Google Bot Check
 		if (url.searchParams.get('continue')) {
 			const cleanUrl = decodeURIComponent(url.searchParams.get('continue') || 'http://example.com')
+			return cleanUrl.toString()
+		}
+
+		// If it is a FaceBook auth Check
+		if (url.searchParams.get('next')) {
+			const cleanUrl = decodeURIComponent(url.searchParams.get('next') || 'https://example.com')
 			return cleanUrl.toString()
 		}
 
