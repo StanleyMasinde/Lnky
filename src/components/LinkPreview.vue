@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { onMounted, ref, watchEffect } from 'vue'
+import { ref, watchEffect } from 'vue'
 
 const props = defineProps<{
 	url: string
+	timestamp: string
 }>()
 
 const title = ref<string | undefined>()
@@ -11,7 +12,10 @@ const description = ref<string | undefined>()
 
 watchEffect(async () => {
 	if (!props.url) return
-	const res = await fetch(props.url, {
+	const proxyUrl = new URL(`https://lnky.api.stanleymasinde.com`)
+	proxyUrl.pathname = 'proxy'
+	proxyUrl.search = `url=${props.url}`
+	const res = await fetch(proxyUrl, {
 		mode: 'cors',
 	})
 	const htmlRes = await res.text()
@@ -30,9 +34,11 @@ watchEffect(async () => {
 </script>
 
 <template>
-	<div class="link-preview flex items-center space-x-4 p-4 border rounded-lg shadow-md w-full overflow-y-scroll">
-		<img v-if="image" :src="image" alt="Preview Image" class="w-20 h-20 rounded-md object-cover" />
-		<div class="flex flex-col flex-1">
+	<div class="flex flex-col md:flex-row items-center space-x-4 p-4 border rounded-lg w-full overflow-y-scroll">
+		<div v-if="image">
+			<img :src="image" alt="Preview Image" class="rounded-md object-cover" />
+		</div>
+		<div class="flex flex-col w-full md:w-[50%]">
 			<h1 id="title" class="font-semibold text-lg line-clamp-2">{{ title || 'Title not available' }}</h1>
 			<p id="description" class="text-sm text-gray-600 line-clamp-3">{{ description || 'Description not available'
 			}}</p>
@@ -41,6 +47,7 @@ watchEffect(async () => {
 				{{ url }}
 			</a>
 
+			<small class="text-xs font-semibold">{{ new Date(timestamp) }}</small>
 		</div>
 	</div>
 </template>

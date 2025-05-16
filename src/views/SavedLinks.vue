@@ -102,10 +102,9 @@ onMounted(() => {
 					<div class="text-center" v-if="savedLinks.length == 0">No links found!</div>
 
 					<TransitionGroup name="list" tag="div" v-else>
-						<div v-for="(link, index) in savedLinks" class="border rounded-lg p-2 m-4" :key="link.link.url">
-							<LinkPreview :url="link.link.url" />
+						<div v-for="link in savedLinks" class="border rounded-lg p-2 m-4" :key="link.link.url">
+							<LinkPreview :url="link.link.url" :timestamp="link.link.createdAt" />
 							<div>
-								<small class="text-xs font-semibold">{{ new Date(link.link.createdAt) }}</small>
 							</div>
 
 							<hr class="my-2">
