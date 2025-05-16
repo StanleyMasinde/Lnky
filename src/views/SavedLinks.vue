@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import LinkPreview from '@/components/LinkPreview.vue'
 import type { Ref } from 'vue'
 import { ref, onMounted } from 'vue'
 
@@ -101,14 +102,9 @@ onMounted(() => {
 					<div class="text-center" v-if="savedLinks.length == 0">No links found!</div>
 
 					<TransitionGroup name="list" tag="div" v-else>
-						<div v-for="(link, index) in savedLinks" class="border rounded-lg p-2 m-4" :key="index">
-							<div class="line-clamp-1">
-								<a class="text-lg underline hover:text-primary" :href="link.link.url" target="_blank">{{
-									link.link.url }}</a>
-							</div>
-
+						<div v-for="link in savedLinks" class="border rounded-lg p-2 m-4" :key="link.link.url">
+							<LinkPreview :url="link.link.url" :timestamp="link.link.createdAt" />
 							<div>
-								<small class="text-xs font-semibold">{{ new Date(link.link.createdAt) }}</small>
 							</div>
 
 							<hr class="my-2">
