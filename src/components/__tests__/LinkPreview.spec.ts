@@ -34,6 +34,7 @@ describe('LinkPreview', () => {
 		const wrapper = mount(LinkPreview, {
 			props: {
 				url: 'https://stanleymasinde.com',
+				timestamp: new Date().toISOString(),
 			},
 		})
 
