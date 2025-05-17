@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { useTweetWidget } from '@/composables/useLoadTwitter'
 import { ref, watchEffect } from 'vue'
 
 interface TwitterEmbed {
@@ -28,36 +27,38 @@ watchEffect(async () => {
 	const proxyUrl = new URL(`https://lnky.api.stanleymasinde.com`)
 	proxyUrl.pathname = 'proxy'
 
-	// Handle Twitter Embed
 	if (props.url.includes('twitter.com') || props.url.includes('x.com')) {
 		const twitterEmbedURL = new URL('https://publish.twitter.com/oembed')
 		isTweet.value = true
 
-		const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
-		const theme = isDarkMode ? 'dark' : 'light'
-
 		twitterEmbedURL.searchParams.set('url', props.url)
-		twitterEmbedURL.searchParams.set('chrome', 'noheader nofooter noborders transparent')
-		twitterEmbedURL.searchParams.set('theme', theme)
 		proxyUrl.searchParams.set('url', twitterEmbedURL.toString())
 
 		const res = await fetch(proxyUrl.toString(), { mode: 'cors' })
 		const embedRes = (await res.json()) as TwitterEmbed
-		tweetEmbedHtml.value = embedRes.html
 
-		await useTweetWidget()
-		return
+		tweetEmbedHtml.value = embedRes.html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+	}
+	else {
+		proxyUrl.search = `url=${props.url}`
 	}
 
-	proxyUrl.search = `url=${props.url}`
-	const res = await fetch(proxyUrl.toString(), { mode: 'cors' })
+	const res = await fetch(proxyUrl, { mode: 'cors' })
 	const htmlRes = await res.text()
 	const domParser = new DOMParser()
 	const parsed = domParser.parseFromString(htmlRes, 'text/html')
 
 	title.value = parsed.title
-	image.value = parsed.querySelector('meta[property="og:image"], meta[name="twitter:image"], meta[itemprop="image"]')?.getAttribute('content') || undefined
-	description.value = parsed.querySelector('meta[name="description"], meta[property="og:description"], meta[name="twitter:description"]')?.getAttribute('content') || undefined
+	image.value = parsed
+		.querySelector(
+			'meta[property="og:image"], meta[name="twitter:image"], meta[itemprop="image"]',
+		)
+		?.getAttribute('content') || undefined
+	description.value = parsed
+		.querySelector(
+			'meta[name="description"], meta[property="og:description"], meta[name="twitter:description"]',
+		)
+		?.getAttribute('content') || undefined
 })
 </script>
 
