@@ -64,10 +64,12 @@ watchEffect(async () => {
 
 <template>
 	<!-- Twitter Embed -->
-	<div v-if="isTweet" class="max-w-full overflow-auto p-4 rounded-lg shadow-md dark:bg-neutral-900">
-		<div v-html="tweetEmbedHtml" class="prose dark:prose-invert"></div>
+	<div v-if="isTweet"
+		class="p-4 rounded-lg shadow-md dark:bg-neutral-900 max-w-[600px] w-full overflow-x-auto mx-auto"
+		style="min-width: 320px;">
+		<div v-html="tweetEmbedHtml" class="prose dark:prose-invert" style="min-width: 550px;"></div>
 
-		<small class="text-xs font-semibold mt-2 text-gray-500">
+		<small class="text-xs font-semibold mt-2 text-gray-500 block text-right">
 			{{ new Date(props.timestamp).toLocaleString() }}
 		</small>
 	</div>
@@ -79,7 +81,9 @@ watchEffect(async () => {
 			<img :src="image" alt="Preview Image" class="w-full h-auto max-h-48 rounded-md object-cover" />
 		</div>
 		<div class="flex flex-col w-full md:w-[60%]">
-			<h1 id="title" class="font-semibold text-lg line-clamp-3">{{ title || 'Title not available' }}</h1>
+			<h1 id="title" class="font-semibold text-lg line-clamp-3">
+				{{ title || 'Title not available' }}
+			</h1>
 			<p id="description" class="text-sm text-gray-600 line-clamp-5 mt-2">
 				{{ description || 'Description not available' }}
 			</p>

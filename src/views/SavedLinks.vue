@@ -82,42 +82,48 @@ onMounted(() => {
 <template>
 	<main class="grid grid-cols-12 grid-rows-1 mx-1 md:mx-48">
 		<div class="col-span-12 w-full">
-			<div class="rounded-lg p-5">
-				<div class="flex justify-center mb-2 w-full sticky top-0 bg-white dark:bg-neutral-900 p-2">
+			<div
+				class="border border-neutral-300 dark:border-neutral-700 rounded-lg p-6 shadow-lg bg-white dark:bg-neutral-900">
+
+				<!-- Navigation -->
+				<div
+					class="flex justify-center gap-2 mb-4 w-full sticky top-0 bg-white dark:bg-neutral-900 p-3 rounded-md shadow-sm z-10">
 					<RouterLink data-cy="home-link" active-class="bg-primary text-white" to="/"
-						class="w-full text-center p-2 rounded-lg">
+						class="w-full text-center p-2 rounded-lg font-semibold text-sm transition duration-200 hover:bg-primary hover:text-white">
 						Home
 					</RouterLink>
 
 					<RouterLink data-cy="saved-links-link" to="/saved-links" active-class="bg-primary text-white"
-						class="w-full text-center p-2 rounded-lg">
-						Saved links
+						class="w-full text-center p-2 rounded-lg font-semibold text-sm transition duration-200 hover:bg-primary hover:text-white">
+						Saved Links
 					</RouterLink>
 				</div>
-				<h1 class="font-medium text-lg">Saved links</h1>
 
-				<!-- The list of links -->
-				<div data-cy="saved-link-item ">
+				<!-- Heading -->
+				<h1 class="font-bold text-2xl mb-6 text-center text-gray-800 dark:text-gray-200">Saved Links</h1>
 
-					<div class="text-center" v-if="savedLinks.length == 0">No links found!</div>
+				<!-- Link List -->
+				<div data-cy="saved-link-item">
+					<div v-if="savedLinks.length === 0"
+						class="text-center text-gray-500 dark:text-gray-400 py-10 text-lg font-medium">
+						No links found!
+					</div>
 
-					<TransitionGroup name="list" tag="div" v-else>
-						<div v-for="link in savedLinks" class="border rounded-lg p-2 m-4" :key="link.link.url">
+					<TransitionGroup name="list" tag="div" v-else class="space-y-6">
+						<div v-for="link in savedLinks" :key="link.link.url"
+							class="border border-neutral-200 dark:border-neutral-700 rounded-lg p-4 shadow-sm bg-gray-50 dark:bg-neutral-800 transition duration-200 hover:shadow-md">
 							<LinkPreview :url="link.link.url" :timestamp="link.link.createdAt" />
-							<div>
-							</div>
 
-							<hr class="my-2">
+							<hr class="my-4 border-neutral-300 dark:border-neutral-700">
 
 							<!-- Actions -->
-							<div class="flex flex-col gap-1 mt-2">
+							<div class="flex flex-wrap gap-3 justify-center md:justify-end">
 								<button @click.prevent="shareLink(link.link.url)"
-									class="bg-primary text-white py-1 rounded-lg">
+									class="bg-primary text-white py-2 px-5 rounded-lg font-semibold transition duration-200 hover:bg-primary/90">
 									Share
 								</button>
-
 								<button @click.prevent="confirmDelete(link)"
-									class="bg-red-500 text-white  rounded-lg py-1">
+									class="bg-red-600 text-white py-2 px-5 rounded-lg font-semibold transition duration-200 hover:bg-red-700">
 									Delete
 								</button>
 							</div>
@@ -127,22 +133,28 @@ onMounted(() => {
 			</div>
 		</div>
 
-		<!-- dialog for the delete confirmation -->
-		<dialog popover ref="deleteRef" class="rounded-lg shadow-lg p-2 md:max-w-9/10 mx-auto my-auto">
-			<div>
-				<h3 class="text-lg font-semibold">Are you sure ?</h3>
-				<p class="text-sm text-gray-600">This link will be lost forever</p>
-				<p class="line-clamp-1 text-sm">{{ currentToDelete?.link.url }}</p>
+		<!-- Delete Confirmation Dialog -->
+		<dialog popover ref="deleteRef"
+			class="rounded-xl shadow-2xl p-6 max-w-md w-full mx-auto my-auto dark:bg-neutral-900 dark:text-white transition duration-300 ease-in-out transform">
+			<div class="flex flex-col space-y-5">
+				<h3 class="text-xl font-bold text-center text-red-600">Confirm Deletion</h3>
+				<p class="text-sm text-center text-gray-600 dark:text-gray-400">
+					This link will be lost forever. Are you sure?
+				</p>
+				<p class="line-clamp-1 text-sm text-center font-mono text-primary dark:text-primary">
+					{{ currentToDelete?.link.url }}
+				</p>
 
-				<hr>
+				<hr class="border-gray-300 dark:border-gray-700 my-3">
 
-				<div class="mt-4 flex justify-end gap-2">
-					<button @click.prevent="deleteRef?.close()" class="px-4 py-2 bg-gray-200 rounded-lg">
-						No, Don't delete
+				<div class="flex justify-end gap-4">
+					<button @click.prevent="deleteRef?.close()"
+						class="px-5 py-2 rounded-lg font-semibold bg-gray-200 dark:bg-gray-700 dark:text-white text-gray-800 hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-200">
+						Cancel
 					</button>
-
-					<button @click.prevent="deleteLink()" class="px-4 py-2 bg-red-600 text-white rounded-lg">
-						Yes, delete
+					<button @click.prevent="deleteLink()"
+						class="px-5 py-2 rounded-lg font-semibold bg-red-600 text-white hover:bg-red-700 transition duration-200">
+						Yes, Delete
 					</button>
 				</div>
 			</div>
