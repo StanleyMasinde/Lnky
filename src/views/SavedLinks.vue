@@ -85,20 +85,6 @@ onMounted(() => {
 			<div
 				class="border border-neutral-300 dark:border-neutral-700 rounded-lg p-6 shadow-lg bg-white dark:bg-neutral-900">
 
-				<!-- Navigation -->
-				<div
-					class="flex justify-center gap-2 mb-4 w-full sticky top-0 bg-white dark:bg-neutral-900 p-3 rounded-md shadow-sm z-10">
-					<RouterLink data-cy="home-link" active-class="bg-primary text-white" to="/"
-						class="w-full text-center p-2 rounded-lg font-semibold text-sm transition duration-200 hover:bg-primary hover:text-white">
-						Home
-					</RouterLink>
-
-					<RouterLink data-cy="saved-links-link" to="/saved-links" active-class="bg-primary text-white"
-						class="w-full text-center p-2 rounded-lg font-semibold text-sm transition duration-200 hover:bg-primary hover:text-white">
-						Saved Links
-					</RouterLink>
-				</div>
-
 				<!-- Heading -->
 				<h1 class="font-bold text-2xl mb-6 text-center text-gray-800 dark:text-gray-200">Saved Links</h1>
 
