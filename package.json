@@ -1,73 +1,31 @@
 {
   "name": "lnky",
-  "version": "1.11.0",
+ "version": "1.11.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "run-p type-check \"build-only {@}\" --",
-    "preview": "vite preview",
-    "test:unit": "vitest",
-    "test:e2e": "start-server-and-test preview http://localhost:4173 'cypress run --e2e'",
-    "test:e2e:dev": "start-server-and-test 'vite dev --port 4173' http://localhost:4173 'cypress open --e2e'",
-    "build-only": "vite build",
-    "type-check": "vue-tsc --build --force",
-    "lint": "eslint .",
-    "format": "prettier --write src/"
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "vue": "^3.5.13",
-    "vue-router": "^4.5.0"
+    "@nuxt/eslint": "1.4.1",
+    "@nuxt/icon": "1.13.0",
+    "@nuxt/scripts": "0.11.7",
+    "@nuxt/test-utils": "3.19.1",
+    "@tailwindcss/vite": "^4.1.8",
+    "@unhead/vue": "^2.0.3",
+    "eslint": "^9.0.0",
+    "nuxt": "^3.17.4",
+    "tailwindcss": "^4.1.8",
+    "vue": "^3.5.15",
+    "vue-router": "^4.5.1"
   },
+  "packageManager": "pnpm@10.7.1+sha512.2d92c86b7928dc8284f53494fb4201f983da65f0fb4f0d40baafa5cf628fa31dae3e5968f12466f17df7e97310e30f343a648baea1b9b350685dafafffdf5808",
   "devDependencies": {
-    "@rushstack/eslint-patch": "^1.10.5",
-    "@stylistic/eslint-plugin": "^3.1.0",
-    "@stylistic/eslint-plugin-js": "^3.1.0",
     "@tailwindcss/forms": "^0.5.10",
-    "@tailwindcss/postcss": "^4.0.9",
-    "@tailwindcss/typography": "^0.5.16",
-    "@tsconfig/node20": "^20.1.4",
-    "@types/jsdom": "^21.1.7",
-    "@types/node": "^22.13.5",
-    "@vitejs/plugin-vue": "^5.2.1",
-    "@vitest/ui": "3.0.7",
-    "@vue/eslint-config-typescript": "^14.4.0",
-    "@vue/test-utils": "^2.4.6",
-    "@vue/tsconfig": "^0.5.1",
-    "cypress": "^14.1.0",
-    "eslint-plugin-cypress": "^4.1.0",
-    "eslint-plugin-vue": "^9.32.0",
-    "fake-indexeddb": "^6.0.0",
-    "globals": "^15.15.0",
-    "jsdom": "^26.0.0",
-    "npm-run-all2": "^7.0.2",
-    "postcss": "^8.5.3",
-    "prettier": "^3.5.2",
-    "start-server-and-test": "^2.0.10",
-    "tailwindcss": "^4.0.9",
-    "typescript": "~5.3.3",
-    "typescript-eslint": "^8.25.0",
-    "vite": "^6.2.0",
-    "vitest": "^3.0.7",
-    "vue-tsc": "^2.2.4"
-  },
-  "packageManager": "pnpm@9.15.4+sha512.b2dc20e2fc72b3e18848459b37359a32064663e5627a51e4c74b2c29dd8e8e0491483c3abb40789cfd578bf362fb6ba8261b05f0387d76792ed6e23ea3b1b6a0",
-  "description": "Avoid tracking from websites by removing the tracking ids from the URL",
-  "main": "eslint.config.js",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/StanleyMasinde/Lnky.git"
-  },
-  "keywords": [
-    "Vue",
-    "Privacy",
-    "Free",
-    "OSS"
-  ],
-  "author": "Stanley Masinde",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/StanleyMasinde/Lnky/issues"
-  },
-  "homepage": "https://github.com/StanleyMasinde/Lnky#readme"
+    "@tailwindcss/typography": "^0.5.16"
+  }
 }
