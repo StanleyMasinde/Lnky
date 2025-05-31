@@ -1,29 +1,75 @@
-# Lnky
+# Nuxt Minimal Starter
 
-Remove tracking IDs from links with ease. Websites add query parameters to links to track the link users. 
-These trackers could make these websites build a profile on you and those who you know. 
-creepy right? 
+Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
-## How to use Android
-This tool works best when installed as a PWA. 
-- Install it to your homescreen
-- when sharing a link from other apps, select this app as the share target
-- It will automatically remove the tracking ids and give you an option to either copy or share link.
+## Setup
 
-## How to use iOS
-iOS does not play nice with PWAs, you'll have to open the app from your homescreen.
-- Paste the link
-- Click clean
-- Copy or share
+Make sure to install dependencies:
 
-_I've tried very hard to make the PWA play nice in iOS but it does not seem to be possible. There are so many indefined behaviours. I suggest an Adroid device for full PWA support._
+```bash
+# npm
+npm install
 
-## Features
-- [x] Removes trackers from links.
-- [x] Expands short URLs.
-- [x] Saves links offline.
-- [ ] Export links to CSV
-- [ ] Import links from CSV
+# pnpm
+pnpm install
 
+# yarn
+yarn install
 
-More docs coming. This is still WIP. 
+# bun
+bun install
+```
+
+## Development Server
+
+Start the development server on `http://localhost:3000`:
+
+```bash
+# npm
+npm run dev
+
+# pnpm
+pnpm dev
+
+# yarn
+yarn dev
+
+# bun
+bun run dev
+```
+
+## Production
+
+Build the application for production:
+
+```bash
+# npm
+npm run build
+
+# pnpm
+pnpm build
+
+# yarn
+yarn build
+
+# bun
+bun run build
+```
+
+Locally preview production build:
+
+```bash
+# npm
+npm run preview
+
+# pnpm
+pnpm preview
+
+# yarn
+yarn preview
+
+# bun
+bun run preview
+```
+
+Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
