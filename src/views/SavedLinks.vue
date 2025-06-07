@@ -12,10 +12,18 @@ interface SavedLink {
 const savedLinks: Ref<SavedLink[]> = ref([])
 const deleteRef = ref<HTMLDialogElement>()
 const currentToDelete = ref<SavedLink>()
+const pageSize = ref<number>(500)
+const currentPage = ref<number>(0)
 
 const confirmDelete = (link: SavedLink) => {
 	currentToDelete.value = link
 	deleteRef.value?.showModal()
+}
+
+const nextPage = () => {
+	currentPage.value++
+	console.log('Gooo', currentPage.value)
+	fetchSavedNotes()
 }
 
 // Delete Link
@@ -43,24 +51,34 @@ const deleteLink = () => {
 
 // Get all the saved link
 const fetchSavedNotes = () => {
+	const offset = (currentPage.value - 1) * pageSize.value
+	let skipped = 0
+	let loaded = 0
 	savedLinks.value = []
-	const request = indexedDB.open('linksDb', 2)
+
+	const request = indexedDB.open('linksDb', 10)
 
 	request.onsuccess = (event) => {
-		const db = (event.target as IDBOpenDBRequest)?.result as IDBDatabase
+		const db = (event.target as IDBOpenDBRequest).result
+		const tx = db.transaction('links', 'readonly')
+		const store = tx.objectStore('links')
 
-		// Open a transaction before accessing object store
-		const transaction = db.transaction('links', 'readonly')
-		const objectStore = transaction.objectStore('links')
-
-		const cursorRequest = objectStore.openCursor()
+		const cursorRequest = store.openCursor()
 
 		cursorRequest.onsuccess = (event) => {
-			const cursor: IDBCursorWithValue | null = (event.target as IDBRequest).result
-			if (cursor) {
-				savedLinks.value.unshift({ id: cursor.key, link: cursor.value })
+			const cursor = (event.target as IDBRequest).result as IDBCursorWithValue | null
+
+			if (!cursor || loaded >= pageSize.value) return
+
+			if (skipped < offset) {
+				skipped++
 				cursor.continue()
+				return
 			}
+
+			savedLinks.value.push({ id: cursor.key, link: cursor.value })
+			loaded++
+			cursor.continue()
 		}
 	}
 }
@@ -115,6 +133,8 @@ onMounted(() => {
 							</div>
 						</div>
 					</TransitionGroup>
+
+					<button @click.prevent="nextPage()">Next</button>
 				</div>
 			</div>
 		</div>
