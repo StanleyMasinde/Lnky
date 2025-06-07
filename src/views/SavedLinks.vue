@@ -163,14 +163,13 @@ onMounted(() => {
 </template>
 
 <style lang="css">
-.list-enter-active,
-.list-leave-active {
-	transition: all 0.5s ease;
+.list-fade-enter-active,
+.list-fade-leave-active {
+	transition: opacity 0.3s ease;
 }
 
-.list-enter-from,
-.list-leave-to {
+.list-fade-enter-from,
+.list-fade-leave-to {
 	opacity: 0;
-	transform: translateX(30px);
 }
 </style>
