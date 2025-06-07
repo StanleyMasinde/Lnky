@@ -60,7 +60,7 @@ const fetchSavedNotes = () => {
 				savedLinks.value = values.map((val, i) => ({
 					id: keys[i],
 					link: val,
-				}))
+				})).reverse()
 			}
 		}
 	}
