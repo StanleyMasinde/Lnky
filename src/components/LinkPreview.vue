@@ -20,6 +20,7 @@ const image = ref<string | undefined>()
 const description = ref<string | undefined>()
 const isTweet = ref<boolean>(false)
 const tweetEmbedHtml = ref<string | undefined>()
+const video = ref<string | undefined>()
 
 watchEffect(async () => {
 	if (!props.url) return
@@ -59,6 +60,13 @@ watchEffect(async () => {
 			'meta[name="description"], meta[property="og:description"], meta[name="twitter:description"]',
 		)
 		?.getAttribute('content') || undefined
+
+	// Detect video meta tags
+	video.value = parsed
+		.querySelector(
+			'meta[property="og:video"], meta[name="twitter:player"], meta[itemprop="video"]',
+		)
+		?.getAttribute('content') || undefined
 })
 </script>
 
@@ -72,6 +80,26 @@ watchEffect(async () => {
 		<small class="text-xs font-semibold mt-2 text-gray-500 block text-right">
 			{{ new Date(props.timestamp).toLocaleString() }}
 		</small>
+	</div>
+
+	<!-- Video Preview -->
+	<div v-else-if="video" class="flex flex-col items-center p-4 border rounded-lg w-full overflow-hidden">
+		<video :src="video" controls style="max-width:100%; border-radius:8px; max-height:320px; background:#000;" />
+		<div class="flex flex-col w-full mt-4">
+			<h1 id="title" class="font-semibold text-lg line-clamp-3">
+				{{ title || 'Title not available' }}
+			</h1>
+			<p id="description" class="text-sm text-gray-600 line-clamp-5 mt-2">
+				{{ description || 'Description not available' }}
+			</p>
+			<a class="text-primary underline hover:text-primary text-sm mt-2 line-clamp-1" :href="props.url"
+				target="_blank">
+				{{ props.url }}
+			</a>
+			<small class="text-xs font-semibold mt-2 text-gray-500">
+				{{ new Date(props.timestamp).toLocaleString() }}
+			</small>
+		</div>
 	</div>
 
 	<!-- OG Metadata Preview (Non-Twitter URLs) -->
