@@ -28,7 +28,8 @@ watchEffect(async () => {
 	const proxyUrl = new URL(`https://lnky.api.stanleymasinde.com`)
 	proxyUrl.pathname = 'proxy'
 
-	if (props.url.includes('twitter.com') || props.url.includes('x.com')) {
+	const isTweetUrl = /^(https?:\/\/)?(twitter\.com|x\.com)\/[^/]+\/status\/\d+/.test(props.url)
+	if (isTweetUrl) {
 		const twitterEmbedURL = new URL('https://publish.twitter.com/oembed')
 		isTweet.value = true
 
