@@ -43,23 +43,24 @@ const deleteLink = () => {
 
 // Get all the saved link
 const fetchSavedNotes = () => {
-	savedLinks.value = []
 	const request = indexedDB.open('linksDb', 2)
 
 	request.onsuccess = (event) => {
-		const db = (event.target as IDBOpenDBRequest)?.result as IDBDatabase
+		const db = (event.target as IDBOpenDBRequest).result
+		const tx = db.transaction('links', 'readonly')
+		const store = tx.objectStore('links')
 
-		// Open a transaction before accessing object store
-		const transaction = db.transaction('links', 'readonly')
-		const objectStore = transaction.objectStore('links')
+		const getAllReq = store.getAll()
+		const getAllKeysReq = store.getAllKeys()
 
-		const cursorRequest = objectStore.openCursor()
-
-		cursorRequest.onsuccess = (event) => {
-			const cursor: IDBCursorWithValue | null = (event.target as IDBRequest).result
-			if (cursor) {
-				savedLinks.value.unshift({ id: cursor.key, link: cursor.value })
-				cursor.continue()
+		getAllReq.onsuccess = () => {
+			const values = getAllReq.result
+			getAllKeysReq.onsuccess = () => {
+				const keys = getAllKeysReq.result
+				savedLinks.value = values.map((val, i) => ({
+					id: keys[i],
+					link: val,
+				})).reverse()
 			}
 		}
 	}
@@ -163,6 +164,8 @@ onMounted(() => {
 </template>
 
 <style lang="css">
+.list-move,
+/* apply transition to moving elements */
 .list-enter-active,
 .list-leave-active {
 	transition: all 0.5s ease;
@@ -172,5 +175,11 @@ onMounted(() => {
 .list-leave-to {
 	opacity: 0;
 	transform: translateX(30px);
+}
+
+/* ensure leaving items are taken out of layout flow so that moving
+   animations can be calculated correctly. */
+.list-leave-active {
+	position: absolute;
 }
 </style>
