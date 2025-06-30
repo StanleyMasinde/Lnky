@@ -1,6 +1,6 @@
 # Lnky
 
-Remove tracking IDs from links with ease. Websites add query parameters to links to track the link users. 
+Remove tracking from links with ease. Websites add query parameters to links to track the link users. 
 These trackers could make these websites build a profile on you and those who you know. 
 creepy right? 
 
