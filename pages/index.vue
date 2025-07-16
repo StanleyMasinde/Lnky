@@ -3,7 +3,7 @@ import { useCleanLink } from '~/composables/useCleanLink'
 import { useIsLoading } from '~/composables/useIsLoading'
 
 const $route = useRoute()
-let sharedLink = null
+let sharedLink: URL | undefined = undefined
 const sharedTitle = $route.query.title as string
 const sharedText = $route.query.text as string
 const sharedUrl = $route.query.url as string
