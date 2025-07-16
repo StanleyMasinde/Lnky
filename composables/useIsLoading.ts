@@ -1,3 +1,3 @@
 export const useIsLoading = () => {
-	return ref(false)
+	return useState('isLoading', () => false)
 }
