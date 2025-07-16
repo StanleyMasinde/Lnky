@@ -106,7 +106,7 @@ onMounted(() => {
 					</div>
 
 					<TransitionGroup name="list" tag="div" v-else class="space-y-6">
-						<div v-for="link in savedLinks" :key="link.link.url"
+						<div v-for="link in savedLinks" :key="link.id"
 							class="border border-neutral-200 dark:border-neutral-700 rounded-lg p-4 shadow-sm bg-gray-50 dark:bg-neutral-800 transition duration-200 hover:shadow-md">
 							<LinkPreview :url="link.link.url" :timestamp="link.link.createdAt" />
 
