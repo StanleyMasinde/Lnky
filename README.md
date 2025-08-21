@@ -24,6 +24,8 @@ _I've tried very hard to make the PWA play nice in iOS but it does not seem to b
 - [x] Saves links offline.
 - [ ] Export links to CSV
 - [ ] Import links from CSV
+- [ ] Auth
+- [ ] Link syning across devices
 
 
 More docs coming. This is still WIP. 
