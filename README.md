@@ -28,4 +28,4 @@ _I've tried very hard to make the PWA play nice in iOS but it does not seem to b
 - [ ] Link syning across devices
 
 
-More docs coming. This is still WIP. 
+More docs coming.
