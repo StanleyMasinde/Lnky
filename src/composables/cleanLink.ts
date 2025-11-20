@@ -1,14 +1,44 @@
 import { useIsLoading } from './state'
 
 const trackingPatterns = {
-	Facebook: ['fbclid', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'rdid', 'share_url', 'mibextid'],
-	Google: ['gclid', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'entry', 'g_ep', 'ucbcb'],
+	Facebook: [
+		'fbclid',
+		'utm_source',
+		'utm_medium',
+		'utm_campaign',
+		'utm_term',
+		'utm_content',
+		'rdid',
+		'share_url',
+		'mibextid',
+	],
+	Google: [
+		'gclid',
+		'utm_source',
+		'utm_medium',
+		'utm_campaign',
+		'utm_term',
+		'utm_content',
+		'entry',
+		'g_ep',
+		'ucbcb',
+	],
 	YouTube: ['si', 'feature', 'app', 't'],
 	Twitter: ['ref_src', 's', 't'],
 	Instagram: ['igshid', 'utm_source', 'utm_medium', 'utm_campaign', 'igsh'],
 	TikTok: ['_r', '_t', 'refer', 'is_from_webapp', 'sender_device'],
 	LinkedIn: ['trk', 'utm_source', 'utm_medium', 'utm_campaign', 'rcm'],
-	Amazon: ['tag', 'ascsubtag', 'ref', 'pf_rd_p', 'pf_rd_r', 'social_share', 'ref_', 'starsLeft', 'psc'],
+	Amazon: [
+		'tag',
+		'ascsubtag',
+		'ref',
+		'pf_rd_p',
+		'pf_rd_r',
+		'social_share',
+		'ref_',
+		'starsLeft',
+		'psc',
+	],
 	Microsoft: ['msclkid'],
 	Reddit: ['utm_source', 'utm_medium', 'utm_campaign', 'impressionid', 'utm_name', 'p'],
 	Pinterest: ['epik', 'utm_source', 'utm_medium', 'utm_campaign', 'invite_code', 'sfo', 'sender'],
@@ -24,7 +54,32 @@ const trackingPatterns = {
 	Pardot: ['piwik_campaign', 'piwik_kwd'],
 	Eloqua: ['elqTrackId', 'elqTrack', 'elqaid', 'elqat'],
 	UTM: ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'],
-	General: ['ref', 'src', 'aff_id', 'affiliate_id', 'campaign', 'adgroup', 'ad', 'creative', 'keyword', 'matchtype', 'network', 'placement', 'target', 'device', 'devicemodel', 'gclid', 'dclid', 'fbclid', 'msclkid', 'twclid', 'igshid', 'scid', 'sclid', 'yclid'],
+	General: [
+		'ref',
+		'src',
+		'aff_id',
+		'affiliate_id',
+		'campaign',
+		'adgroup',
+		'ad',
+		'creative',
+		'keyword',
+		'matchtype',
+		'network',
+		'placement',
+		'target',
+		'device',
+		'devicemodel',
+		'gclid',
+		'dclid',
+		'fbclid',
+		'msclkid',
+		'twclid',
+		'igshid',
+		'scid',
+		'sclid',
+		'yclid',
+	],
 }
 
 const shortDomains: string[] = []
@@ -99,9 +154,11 @@ const removeTrackers = (dirtyLink: string) => {
 	const urlObject = new URL(dirtyLink)
 	const searchParams = new URLSearchParams(urlObject.search)
 
-	Object.values(trackingPatterns).flat().forEach((trackingParam) => {
-		searchParams.delete(trackingParam)
-	})
+	Object.values(trackingPatterns)
+		.flat()
+		.forEach((trackingParam) => {
+			searchParams.delete(trackingParam)
+		})
 
 	urlObject.search = searchParams.toString()
 
@@ -123,7 +180,13 @@ export const useCleanLink = async (link: string) => {
 	// Special case for meta apps like facebook use a forward slash /share for this.
 	// For now, I'll keep it simple. I can add the logic in the block above but I don't want to
 	// bloat it since it will grow later.
-	if (url.includes('facebook') || url.includes('instagram') || url.includes('goo.gl')) {
+	// TikTok is also a culprit so I'll add it here.
+	if (
+		url.includes('facebook')
+		|| url.includes('instagram')
+		|| url.includes('goo.gl')
+		|| url.includes('tiktok')
+	) {
 		const expanded = await expandUrl(link)
 		if (expanded) {
 			url = expanded
