@@ -97,75 +97,74 @@ const saveLinkInDb = (link: string) => {
 </script>
 
 <template>
-	<main class="grid grid-cols-12 grid-rows-1 mx-2 md:mx-48">
-		<div class="col-span-12">
-			<div
-				class="border border-neutral-300 dark:border-neutral-700 rounded-lg p-6 shadow-lg bg-white dark:bg-neutral-900">
-				<!-- Navigation -->
-				<div
-					class="flex justify-center gap-2 mb-4 sticky top-0 bg-white dark:bg-neutral-900 p-3 rounded-md shadow-sm">
-					<RouterLink data-cy="home-link" active-class="bg-primary text-white" to="/"
-						class="w-full text-center p-2 rounded-lg font-semibold text-sm transition duration-200 hover:bg-primary hover:text-white">
-						Home
-					</RouterLink>
-					<RouterLink data-cy="saved-links-link" to="/saved-links" active-class="bg-primary text-white"
-						class="w-full text-center p-2 rounded-lg font-semibold text-sm transition duration-200 hover:bg-primary hover:text-white">
-						Saved Links
-					</RouterLink>
-				</div>
+  <main class="min-h-[70vh] flex items-center justify-center py-12 px-4">
+    <div class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
 
-				<!-- Main Section -->
-				<h1 class="font-bold text-2xl mb-4 text-center">Welcome to Lnky</h1>
-				<div class="space-y-5">
-					<form @submit.prevent="cleanLink()" @reset="currentLink = undefined; sanitizedLink = undefined">
-						<div class="space-y-4">
-							<div>
-								<label for="linkInput" class="block font-semibold mb-1">Paste the link below</label>
-								<input data-cy="url-input" autocomplete="off" v-model="currentLink"
-									class="w-full rounded-lg dark:bg-neutral-800 dark:text-white focus:ring-primary focus:border-primary px-4 py-3 border border-neutral-300 dark:border-neutral-700 transition duration-200"
-									type="url" id="linkInput" placeholder="Paste the URL here" />
-							</div>
+      <!-- Left: Hero / Input -->
+      <section class="space-y-6">
+        <h1 class="text-4xl md:text-5xl font-extrabold leading-tight">Privacy-first link cleaner</h1>
+        <p class="text-lg text-gray-600 dark:text-gray-300">Paste any URL and remove tracking parameters instantly. Save or share cleaned links with one click.</p>
 
-							<div class="flex gap-2">
-								<button :disabled="!currentLink" data-cy="clean-button"
-									class="bg-primary text-white rounded-lg w-full p-3 cursor-pointer disabled:cursor-not-allowed disabled:bg-primary/50 transition duration-200 font-semibold">
-									{{ useIsLoading().value ? "Please wait" : "Remove Trackers" }}
-								</button>
-								<button
-									class="w-full bg-gray-200 dark:bg-neutral-700 text-gray-800 dark:text-white rounded-lg p-3 font-semibold transition duration-200 hover:bg-gray-300 dark:hover:bg-neutral-600"
-									type="reset">
-									Reset
-								</button>
-							</div>
-						</div>
-					</form>
+        <form @submit.prevent="cleanLink()" @reset="currentLink = undefined; sanitizedLink = undefined" class="w-full">
+          <div class="flex flex-col sm:flex-row gap-3">
+            <input id="linkInput" data-cy="url-input" type="url" v-model="currentLink" autocomplete="off"
+              placeholder="Paste a URL to clean (e.g. https://example.com/?utm_source=twitter)"
+              class="flex-1 px-4 py-4 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" />
 
-					<hr class="my-4 border-neutral-300 dark:border-neutral-700">
+            <button :disabled="!currentLink" data-cy="clean-button" type="submit"
+              class="px-6 py-4 rounded-lg bg-primary text-white font-semibold disabled:opacity-60">
+              {{ useIsLoading().value ? 'Please wait' : 'Remove Trackers' }}
+            </button>
+          </div>
 
-					<div class="space-y-4">
-						<textarea placeholder="Cleaned link will appear here" data-cy="cleaned-url" id="cleanedOutput"
-							:value="sanitizedLink" readonly
-							class="w-full rounded-lg dark:bg-neutral-800 dark:text-white px-4 py-3 border border-neutral-300 dark:border-neutral-700 focus:border-primary focus:ring-primary transition duration-200"></textarea>
+          <div class="mt-3 flex gap-3">
+              <button type="button" @click.prevent="copyToClipBoard()" :disabled="!sanitizedLink"
+                class="btn btn-ghost px-4 py-2 rounded-md">Copy</button>
+              <button type="button" @click.prevent="share" :disabled="!sanitizedLink"
+                class="btn btn-primary px-4 py-2 rounded-md">Share</button>
+              <button type="reset" class="btn btn-secondary px-4 py-2 rounded-md">Reset</button>
+          </div>
+        </form>
 
-						<div class="flex gap-2">
-							<button :disabled="!sanitizedLink" data-cy="share-button" @click.prevent="share"
-								class="flex-1 px-4 py-3 rounded-lg font-semibold bg-primary text-white hover:bg-primary/90 transition duration-200 disabled:bg-primary/50">
-								Share
-							</button>
-							<button :disabled="!sanitizedLink" @click.prevent="copyToClipBoard()"
-								class="flex-1 px-4 py-3 rounded-lg font-semibold bg-primary text-white hover:bg-primary/90 transition duration-200 disabled:bg-primary/50">
-								Copy to Clipboard
-							</button>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
+        <div class="mt-4">
+          <label class="block mb-2 text-sm font-medium">Cleaned Link</label>
+          <div class="rounded-lg border border-neutral-200 dark:border-neutral-700 p-3 bg-gray-50 dark:bg-neutral-900">
+            <a v-if="sanitizedLink" :href="sanitizedLink" target="_blank" class="text-primary break-all">{{ sanitizedLink }}</a>
+            <div v-else class="text-sm text-gray-500">Cleaned link will appear here after removing trackers.</div>
+          </div>
+        </div>
+      </section>
 
-		<!-- Popover Notification -->
-		<div popover id="my-popover" ref="popoverElement"
-			class="bg-black text-white py-2 px-4 shadow-lg rounded-lg fixed top-4 left-1/2 transform -translate-x-1/2 w-fit max-w-xs text-center font-semibold transition-opacity duration-300 ease-in-out dark:bg-neutral-800 dark:border dark:border-neutral-700">
-			Text copied to clipboard
-		</div>
-	</main>
+      <!-- Right: Preview / Saved CTA -->
+      <aside class="space-y-6">
+        <div class="p-6 rounded-xl shadow-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800">
+          <h3 class="font-semibold text-lg mb-2">Preview</h3>
+          <div v-if="sanitizedLink">
+            <LinkPreview :url="sanitizedLink" :timestamp="new Date().toISOString()" />
+            <div class="mt-4 flex gap-3">
+            <button @click.prevent="saveLinkInDb(sanitizedLink)" class="btn btn-primary px-4 py-2 rounded-lg">Save</button>
+            <button @click.prevent="share" class="btn btn-secondary px-4 py-2 rounded-lg">Share</button>
+            </div>
+          </div>
+          <div v-else class="text-gray-500">Paste a link to see a preview and quick actions.</div>
+        </div>
+
+        <div class="p-6 rounded-xl bg-linear-to-br from-primary/10 to-transparent border border-dashed border-primary/20 text-sm">
+          <h4 class="font-semibold">Why use Lnky?</h4>
+          <ul class="mt-2 list-disc list-inside text-gray-600 dark:text-gray-300">
+            <li>Removes tracking params from URLs</li>
+            <li>Save cleaned links locally</li>
+            <li>Share using native OS share</li>
+          </ul>
+        </div>
+      </aside>
+
+    </div>
+
+    <!-- Popover Notification -->
+    <div popover id="my-popover" ref="popoverElement"
+      class="bg-black text-white py-2 px-4 shadow-lg rounded-lg fixed top-6 left-1/2 transform -translate-x-1/2 w-fit max-w-xs text-center font-semibold transition-opacity duration-300 ease-in-out dark:bg-neutral-800 dark:border dark:border-neutral-700">
+      Text copied to clipboard
+    </div>
+  </main>
 </template>

@@ -119,12 +119,10 @@ onMounted(() => {
 
 							<!-- Actions -->
 							<div class="flex flex-wrap gap-3 justify-center md:justify-end">
-								<button @click.prevent="shareLink(link.link.url)"
-									class="bg-primary text-white py-2 px-5 rounded-lg font-semibold transition duration-200 hover:bg-primary/90">
+								<button @click.prevent="shareLink(link.link.url)" class="btn btn-primary py-2 px-5">
 									Share
 								</button>
-								<button @click.prevent="confirmDelete(link)"
-									class="bg-red-600 text-white py-2 px-5 rounded-lg font-semibold transition duration-200 hover:bg-red-700">
+								<button @click.prevent="confirmDelete(link)" class="btn btn-danger py-2 px-5">
 									Delete
 								</button>
 							</div>
