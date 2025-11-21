@@ -3,25 +3,120 @@
 @plugin '@tailwindcss/forms';
 @plugin "@tailwindcss/typography";
 
-@theme {
-  --color-primary: #695958;
-  --color-secondary: #b6c8a9;
+:root {
+  /* Primary green palette inspired by the reference site */
+  --color-primary: #10b981; /* emerald-500 */
+  --color-primary-600: #059669; /* emerald-600 */
+  --color-secondary: #bbf7d0; /* soft green */
+  --bg-plate: #f6fffa; /* very light green background */
 }
 
-/*
-  The default border color has changed to `currentColor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
 @layer base {
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: var(--color-gray-200, currentColor);
+  /* Soft, subtle background with radial accents to evoke the Addifico style
+     while using only CSS (no external assets). It's fixed so it feels like
+     a page background behind the app chrome. */
+  body {
+    background-color: var(--bg-plate);
+    background-image:
+      radial-gradient(600px 300px at 10% 10%, rgba(16,185,129,0.06), transparent 12%),
+      radial-gradient(400px 200px at 90% 80%, rgba(16,185,129,0.04), transparent 12%),
+      linear-gradient(180deg, rgba(16,185,129,0.02), rgba(16,185,129,0.00));
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
+
+  /* Make primary color utilities (where custom utilities use var) more consistent */
+  .text-primary { color: var(--color-primary) !important; }
+  .bg-primary { background-color: var(--color-primary) !important; }
+  .border-primary { border-color: var(--color-primary) !important; }
+}
+
+/* Button component styles for consistent responsive buttons and hover states */
+@layer components {
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    padding: .5rem 1rem;
+    border-radius: .5rem;
+    font-weight: 600;
+    font-size: .875rem; /* 14px */
+    line-height: 1;
+    transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease, opacity .15s ease;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  /* Primary variant */
+  .btn-primary {
+    background-color: var(--color-primary);
+    color: white;
+    border: 1px solid transparent;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--color-primary-600);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(6, 120, 90, 0.12);
+  }
+
+  .btn-primary:active {
+    transform: translateY(0);
+    box-shadow: none;
+  }
+
+  /* Ghost / neutral variant */
+  .btn-ghost {
+    background: transparent;
+    color: inherit;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+
+  .btn-ghost:hover {
+    background: rgba(16,185,129,0.06);
+  }
+
+  /* Danger variant */
+  .btn-danger {
+    background: #ef4444; /* red-500 */
+    color: white;
+  }
+
+  .btn-danger:hover {
+    background: #dc2626; /* red-600 */
+    transform: translateY(-2px);
+  }
+
+  /* Disabled state */
+  .btn[disabled],
+  .btn.disabled {
+    opacity: .55;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Secondary / neutral variant */
+  .btn-secondary {
+    background: #f3f4f6; /* gray-100 */
+    color: #111827; /* gray-900 */
+    border: 1px solid rgba(0,0,0,0.04);
+  }
+
+  .btn-secondary:hover {
+    background: #e5e7eb; /* gray-200 */
+  }
+
+  /* Responsive sizing */
+  @media (min-width: 640px) {
+    .btn { padding: .75rem 1.25rem; font-size: 1rem; }
+  }
+
+  /* Respect reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    .btn { transition: none !important; }
   }
 }
