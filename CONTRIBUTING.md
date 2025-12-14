@@ -81,4 +81,4 @@ If you find a security vulnerability, do not open a public issue. Instead, email
 ## License
 By contributing, you agree that your code will be licensed under the [MIT License](LICENSE).
 
-Happy coding! 🚀
+Happy coding!
