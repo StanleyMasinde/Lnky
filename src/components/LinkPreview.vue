@@ -74,7 +74,7 @@ watchEffect(async () => {
 <template>
 	<!-- Twitter Embed -->
 	<div v-if="isTweet"
-		class="p-4 rounded-lg shadow-md dark:bg-neutral-900 max-w-[600px] w-full overflow-x-auto mx-auto"
+		class="p-4 rounded-lg shadow-md dark:bg-neutral-900 max-w-150 w-full overflow-x-auto mx-auto"
 		style="min-width: 320px;">
 		<div v-html="tweetEmbedHtml" class="prose dark:prose-invert" style="min-width: 550px;"></div>
 
@@ -106,7 +106,7 @@ watchEffect(async () => {
 	<!-- OG Metadata Preview (Non-Twitter URLs) -->
 	<div v-else
 		class="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4 p-4 border rounded-lg w-full overflow-hidden">
-		<div v-if="image" class="w-full md:w-[40%] flex-shrink-0">
+		<div v-if="image" class="w-full md:w-[40%] shrink-0">
 			<img :src="image" alt="Preview Image" class="w-full h-auto max-h-48 rounded-md object-cover" />
 		</div>
 		<div class="flex flex-col w-full md:w-[60%]">
