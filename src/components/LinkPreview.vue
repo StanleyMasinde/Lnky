@@ -1,54 +1,95 @@
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue'
+import { nextTick, ref, watchEffect } from 'vue'
+import {
+	parseOEmbedResponse,
+	resolveOEmbedConfig,
+	stripScripts,
+	toLiveTweetHtml,
+	toStaticTweetHtml,
+	type OEmbedProvider,
+	type OEmbedResponse,
+} from '@/composables/oembed'
 
-interface TwitterEmbed {
-	url: string
-	title: string
-	html: string
-	width: number | null
-	height: number | null
-	type: 'rich'
-	cache_age: string
-	provider_name: 'Twitter'
-	provider_url: string
-	version: '1.0'
-}
+const PROXY_ORIGIN = 'https://lnky.api.stanleymasinde.com'
 
 const props = defineProps<{ url: string, timestamp: string }>()
 const title = ref<string | undefined>()
 const image = ref<string | undefined>()
 const description = ref<string | undefined>()
-const isTweet = ref<boolean>(false)
-const tweetEmbedHtml = ref<string | undefined>()
+const embedHtml = ref<string | undefined>()
+const embedProvider = ref<OEmbedProvider | undefined>()
 const video = ref<string | undefined>()
+const twitterScriptSrc = ref<string | undefined>()
+const twitterSourceHtml = ref<string | undefined>()
+const twitterEmbedLoaded = ref(false)
+const embedRoot = ref<HTMLElement>()
 
-watchEffect(async () => {
-	if (!props.url) return
-
-	const proxyUrl = new URL(`https://lnky.api.stanleymasinde.com`)
+const proxyUrlFor = (target: string) => {
+	const proxyUrl = new URL(PROXY_ORIGIN)
 	proxyUrl.pathname = 'proxy'
+	proxyUrl.searchParams.set('url', target)
+	return proxyUrl
+}
 
-	const isTweetUrl = /^(https?:\/\/)?(twitter\.com|x\.com)\/[^/]+\/status\/\d+/.test(props.url)
-	if (isTweetUrl) {
-		const twitterEmbedURL = new URL('https://publish.twitter.com/oembed')
-		isTweet.value = true
+const twitterWidgets = () =>
+	(window as unknown as { twttr?: { widgets?: { load?: (root?: HTMLElement) => void } } }).twttr
 
-		twitterEmbedURL.searchParams.set('url', props.url)
-		proxyUrl.searchParams.set('url', twitterEmbedURL.toString())
-
-		const res = await fetch(proxyUrl.toString(), { mode: 'cors' })
-		const embedRes = (await res.json()) as TwitterEmbed
-
-		tweetEmbedHtml.value = embedRes.html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-	}
-	else {
-		proxyUrl.search = `url=${props.url}`
+const loadWidgetScript = (src: string, root?: HTMLElement) => {
+	const existing = document.querySelector(`script[src="${src}"]`)
+	if (existing) {
+		twitterWidgets()?.widgets?.load?.(root)
+		return
 	}
 
-	const res = await fetch(proxyUrl, { mode: 'cors' })
-	const htmlRes = await res.text()
-	const domParser = new DOMParser()
-	const parsed = domParser.parseFromString(htmlRes, 'text/html')
+	const script = document.createElement('script')
+	script.src = src
+	script.async = true
+	script.addEventListener('load', () => {
+		twitterWidgets()?.widgets?.load?.(root)
+	})
+	document.body.appendChild(script)
+}
+
+const activateTwitterEmbed = async () => {
+	if (!twitterSourceHtml.value || !twitterScriptSrc.value || twitterEmbedLoaded.value) return
+
+	embedHtml.value = toLiveTweetHtml(twitterSourceHtml.value)
+	twitterEmbedLoaded.value = true
+	await nextTick()
+	loadWidgetScript(twitterScriptSrc.value, embedRoot.value)
+}
+
+const applyOEmbed = async (data: OEmbedResponse, provider: OEmbedProvider, scriptSrc?: string) => {
+	embedProvider.value = provider
+	title.value = data.title
+	image.value = data.thumbnail_url
+
+	if (provider === 'youtube' || provider === 'reddit') {
+		description.value = data.author_name
+		return Boolean(data.title || data.author_name || data.thumbnail_url)
+	}
+
+	if (!data.html) return false
+
+	if (provider === 'twitter' && scriptSrc) {
+		twitterSourceHtml.value = data.html
+		twitterScriptSrc.value = scriptSrc
+		embedHtml.value = toStaticTweetHtml(data.html)
+		return true
+	}
+
+	embedHtml.value = stripScripts(data.html)
+
+	if (scriptSrc) {
+		await nextTick()
+		loadWidgetScript(scriptSrc)
+	}
+
+	return true
+}
+
+const applyOpenGraph = (htmlRes: string, skipVideo = false) => {
+	const parsed = new DOMParser().parseFromString(htmlRes, 'text/html')
 
 	title.value = parsed.title
 	image.value = parsed
@@ -62,21 +103,75 @@ watchEffect(async () => {
 		)
 		?.getAttribute('content') || undefined
 
-	// Detect video meta tags
+	if (skipVideo) return
+
 	video.value = parsed
 		.querySelector(
 			'meta[property="og:video"], meta[name="twitter:player"], meta[itemprop="video"]',
 		)
 		?.getAttribute('content') || undefined
+}
+
+const resetPreview = () => {
+	title.value = undefined
+	image.value = undefined
+	description.value = undefined
+	embedHtml.value = undefined
+	embedProvider.value = undefined
+	video.value = undefined
+	twitterScriptSrc.value = undefined
+	twitterSourceHtml.value = undefined
+	twitterEmbedLoaded.value = false
+}
+
+watchEffect(async () => {
+	if (!props.url) return
+
+	resetPreview()
+
+	const oembed = await resolveOEmbedConfig(props.url)
+	if (oembed) {
+		try {
+			const res = await fetch(proxyUrlFor(oembed.endpoint), { mode: 'cors' })
+			if (res.ok) {
+				const embedRes = parseOEmbedResponse(await res.text())
+				if (embedRes && await applyOEmbed(embedRes, oembed.provider, oembed.scriptSrc)) {
+					return
+				}
+			}
+		}
+		catch {
+			// Reddit/YouTube HTML scrapes are JS shells. Don't pretend they are previews.
+		}
+
+		if (oembed.provider === 'reddit' || oembed.provider === 'youtube') {
+			return
+		}
+	}
+
+	const res = await fetch(proxyUrlFor(props.url), { mode: 'cors' })
+	applyOpenGraph(await res.text(), oembed?.provider === 'youtube')
 })
 </script>
 
 <template>
-	<!-- Twitter Embed -->
-	<div v-if="isTweet"
+	<!-- Twitter / Reddit rich oEmbed -->
+	<div v-if="embedHtml" ref="embedRoot"
 		class="p-4 rounded-lg shadow-md dark:bg-neutral-900 max-w-150 w-full overflow-x-auto mx-auto"
-		style="min-width: 320px;">
-		<div v-html="tweetEmbedHtml" class="prose dark:prose-invert" style="min-width: 550px;"></div>
+		:style="embedProvider === 'twitter' && twitterEmbedLoaded ? 'min-width: 320px;' : undefined">
+		<div v-html="embedHtml" class="prose dark:prose-invert" data-cy="rich-embed"
+			:style="embedProvider === 'twitter' && twitterEmbedLoaded ? 'min-width: 550px;' : undefined"></div>
+
+		<div v-if="embedProvider === 'twitter' && !twitterEmbedLoaded" class="mt-3 space-y-2">
+			<button type="button" data-cy="load-twitter-embed"
+				class="bg-primary text-white py-2 px-5 rounded-lg font-semibold transition duration-200 hover:bg-primary/90"
+				@click="activateTwitterEmbed">
+				Load tweet
+			</button>
+			<p class="text-xs text-gray-500">
+				Loads X’s embed script, which can set cookies.
+			</p>
+		</div>
 
 		<small class="text-xs font-semibold mt-2 text-gray-500 block text-right">
 			{{ new Date(props.timestamp).toLocaleString() }}
@@ -103,7 +198,7 @@ watchEffect(async () => {
 		</div>
 	</div>
 
-	<!-- OG Metadata Preview (Non-Twitter URLs) -->
+	<!-- OG Metadata Preview -->
 	<div v-else
 		class="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4 p-4 border rounded-lg w-full overflow-hidden">
 		<div v-if="image" class="w-full md:w-[40%] shrink-0">

@@ -1,10 +1,8 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import LinkPreview from '../LinkPreview.vue'
 
-vi.stubGlobal('fetch', vi.fn(() =>
-	Promise.resolve({
-		text: () => Promise.resolve(`<!DOCTYPE html>
+const siteHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -25,12 +23,37 @@ vi.stubGlobal('fetch', vi.fn(() =>
 <body>
   <h1>Welcome to the Official Website of Stanley Masinde</h1>
 </body>
-</html>`),
-	}),
-))
+</html>`
+
+const mockHtmlFetch = (html: string) => {
+	vi.stubGlobal('fetch', vi.fn(() =>
+		Promise.resolve({
+			ok: true,
+			text: () => Promise.resolve(html),
+			json: () => Promise.reject(new Error('not json')),
+		}),
+	))
+}
+
+const mockJsonFetch = (data: unknown) => {
+	vi.stubGlobal('fetch', vi.fn(() =>
+		Promise.resolve({
+			ok: true,
+			text: () => Promise.resolve(JSON.stringify(data)),
+			json: () => Promise.resolve(data),
+		}),
+	))
+}
+
+afterEach(() => {
+	vi.unstubAllGlobals()
+	document.querySelectorAll('script[src*="widgets.js"]').forEach(script => script.remove())
+})
 
 describe('LinkPreview', () => {
 	it('renders properly', async () => {
+		mockHtmlFetch(siteHtml)
+
 		const wrapper = mount(LinkPreview, {
 			props: {
 				url: 'https://stanleymasinde.com',
@@ -44,22 +67,127 @@ describe('LinkPreview', () => {
 		expect(wrapper.get('#description').text()).toBe('Official website of Stanley Masinde, a Software Engineer specializing in fullstack development, systems programming, and Rust.')
 	})
 
+	it('uses YouTube oEmbed for title and thumbnail, not an iframe', async () => {
+		mockJsonFetch({
+			title: 'Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)',
+			author_name: 'Rick Astley',
+			type: 'video',
+			provider_name: 'YouTube',
+			html: '<iframe width="200" height="113" src="https://www.youtube.com/embed/dQw4w9WgXcQ?feature=oembed"></iframe>',
+			thumbnail_url: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
+		})
+
+		const wrapper = mount(LinkPreview, {
+			props: {
+				url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+				timestamp: new Date().toISOString(),
+			},
+		})
+
+		await flushPromises()
+		expect(wrapper.get('#title').text()).toContain('Never Gonna Give You Up')
+		expect(wrapper.get('img').attributes('src')).toBe('https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg')
+		expect(wrapper.get('#description').text()).toBe('Rick Astley')
+		expect(wrapper.find('iframe').exists()).toBe(false)
+		expect(wrapper.find('video').exists()).toBe(false)
+		expect(wrapper.find('[data-cy="youtube-embed"]').exists()).toBe(false)
+	})
+
+	it('shows a static tweet until the user loads the official embed', async () => {
+		mockJsonFetch({
+			author_name: 'US Department of the Interior',
+			type: 'rich',
+			provider_name: 'Twitter',
+			html: '<blockquote class="twitter-tweet"><p>Sunsets</p></blockquote><script async src="https://platform.twitter.com/widgets.js"></script>',
+		})
+
+		const wrapper = mount(LinkPreview, {
+			props: {
+				url: 'https://twitter.com/Interior/status/463440424141459456',
+				timestamp: new Date().toISOString(),
+			},
+			attachTo: document.body,
+		})
+
+		await flushPromises()
+		expect(wrapper.get('[data-cy="rich-embed"]').html()).toContain('twitter-tweet-static')
+		expect(wrapper.find('[data-cy="load-twitter-embed"]').exists()).toBe(true)
+		expect(document.querySelector('script[src="https://platform.twitter.com/widgets.js"]')).toBeNull()
+
+		await wrapper.get('[data-cy="load-twitter-embed"]').trigger('click')
+		await flushPromises()
+
+		expect(wrapper.get('[data-cy="rich-embed"]').html()).not.toContain('twitter-tweet-static')
+		expect(wrapper.get('[data-cy="rich-embed"]').html()).toContain('class="twitter-tweet"')
+		expect(wrapper.get('[data-cy="rich-embed"]').html()).toContain('data-dnt="true"')
+		expect(wrapper.find('[data-cy="load-twitter-embed"]').exists()).toBe(false)
+		expect(document.querySelector('script[src="https://platform.twitter.com/widgets.js"]')).not.toBeNull()
+
+		wrapper.unmount()
+	})
+
+	it('uses Reddit oEmbed for title and author, not a page scrape or widget', async () => {
+		mockJsonFetch({
+			title: 'test post please ignore',
+			author_name: 'qgyh2',
+			type: 'rich',
+			provider_name: 'reddit',
+			html: '<blockquote class="reddit-embed-bq"><a href="https://www.reddit.com/r/pics/comments/92dd8/test_post_please_ignore/">test post please ignore</a></blockquote><script async src="https://embed.reddit.com/widgets.js"></script>',
+		})
+
+		const wrapper = mount(LinkPreview, {
+			props: {
+				url: 'https://www.reddit.com/r/pics/comments/92dd8/test_post_please_ignore/',
+				timestamp: new Date().toISOString(),
+			},
+		})
+
+		await flushPromises()
+		expect(wrapper.get('#title').text()).toBe('test post please ignore')
+		expect(wrapper.get('#description').text()).toBe('qgyh2')
+		expect(wrapper.find('[data-cy="rich-embed"]').exists()).toBe(false)
+		expect(wrapper.find('iframe').exists()).toBe(false)
+		expect(document.querySelector('script[src="https://embed.reddit.com/widgets.js"]')).toBeNull()
+	})
+
+	it('does not scrape Reddit HTML when oEmbed returns a non-JSON body', async () => {
+		vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL) => {
+			const url = String(input)
+			if (decodeURIComponent(url).includes('reddit.com/oembed')) {
+				return Promise.resolve({
+					ok: true,
+					text: () => Promise.resolve('invalid URL value'),
+				})
+			}
+			return Promise.resolve({
+				ok: true,
+				text: () => Promise.resolve('<html><title>Blocked</title></html>'),
+			})
+		}))
+
+		const wrapper = mount(LinkPreview, {
+			props: {
+				url: 'https://redd.it/92dd8',
+				timestamp: new Date().toISOString(),
+			},
+		})
+
+		await flushPromises()
+		expect(wrapper.get('#title').text()).toBe('Title not available')
+		expect(wrapper.find('#title').text()).not.toBe('Blocked')
+	})
+
 	it('renders a playable video if og:video meta tag is present', async () => {
-		// Mock fetch to return HTML with og:video
-		vi.stubGlobal('fetch', vi.fn(() =>
-			Promise.resolve({
-				text: () => Promise.resolve(`<!DOCTYPE html>
-<html lang=\"en\">
+		mockHtmlFetch(`<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta property=\"og:title\" content=\"Video Test\">
-  <meta property=\"og:description\" content=\"A test video\">
-  <meta property=\"og:video\" content=\"https://example.com/video.mp4\">
+  <meta property="og:title" content="Video Test">
+  <meta property="og:description" content="A test video">
+  <meta property="og:video" content="https://example.com/video.mp4">
   <title>Video Test</title>
 </head>
 <body></body>
-</html>`),
-			}),
-		))
+</html>`)
 
 		const wrapper = mount(LinkPreview, {
 			props: {
