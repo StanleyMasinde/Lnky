@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
+	canonicalRedditUrl,
 	getOEmbedConfig,
 	isRedditUrl,
 	isTweetUrl,
 	isYouTubeUrl,
+	parseOEmbedResponse,
 	toLiveTweetHtml,
 	toStaticTweetHtml,
 } from '../oembed'
@@ -22,6 +24,7 @@ describe('oEmbed helpers', () => {
 
 		expect(isRedditUrl('https://www.reddit.com/r/pics/comments/92dd8/test_post_please_ignore/')).toBe(true)
 		expect(isRedditUrl('https://old.reddit.com/r/pics/comments/92dd8/test_post_please_ignore/')).toBe(true)
+		expect(isRedditUrl('https://www.reddit.com/comments/92dd8')).toBe(true)
 		expect(isRedditUrl('https://redd.it/92dd8')).toBe(true)
 		expect(isRedditUrl('https://www.reddit.com/r/pics/')).toBe(false)
 	})
@@ -49,10 +52,24 @@ describe('oEmbed helpers', () => {
 		expect(toLiveTweetHtml(html)).toBe('<blockquote data-dnt="true" class="twitter-tweet"><p>hi</p></blockquote>')
 	})
 
-	it('builds the Reddit oEmbed endpoint', () => {
+	it('builds the Reddit oEmbed endpoint from a canonical post URL', () => {
 		const config = getOEmbedConfig('https://www.reddit.com/r/pics/comments/92dd8/test_post_please_ignore/')
 		expect(config?.provider).toBe('reddit')
 		expect(config?.endpoint).toContain('https://www.reddit.com/oembed')
-		expect(config?.scriptSrc).toBe('https://embed.reddit.com/widgets.js')
+		expect(config?.endpoint).toContain(encodeURIComponent('https://www.reddit.com/r/pics/comments/92dd8'))
+		expect(config?.scriptSrc).toBeUndefined()
+	})
+
+	it('rewrites redd.it and /comments/{id} URLs so oEmbed accepts them', () => {
+		expect(canonicalRedditUrl('https://redd.it/92dd8')).toBe('https://www.reddit.com/r/all/comments/92dd8')
+		expect(canonicalRedditUrl('https://www.reddit.com/comments/92dd8')).toBe('https://www.reddit.com/r/all/comments/92dd8')
+
+		const short = getOEmbedConfig('https://redd.it/92dd8')
+		expect(short?.endpoint).toContain(encodeURIComponent('https://www.reddit.com/r/all/comments/92dd8'))
+	})
+
+	it('ignores non-JSON Reddit oEmbed bodies instead of throwing', () => {
+		expect(parseOEmbedResponse('invalid URL value')).toBeNull()
+		expect(parseOEmbedResponse('{"title":"ok"}')?.title).toBe('ok')
 	})
 })

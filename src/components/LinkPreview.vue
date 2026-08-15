@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { nextTick, ref, watchEffect } from 'vue'
 import {
-	getOEmbedConfig,
+	parseOEmbedResponse,
+	resolveOEmbedConfig,
 	stripScripts,
 	toLiveTweetHtml,
 	toStaticTweetHtml,
@@ -63,9 +64,9 @@ const applyOEmbed = async (data: OEmbedResponse, provider: OEmbedProvider, scrip
 	title.value = data.title
 	image.value = data.thumbnail_url
 
-	if (provider === 'youtube') {
+	if (provider === 'youtube' || provider === 'reddit') {
 		description.value = data.author_name
-		return Boolean(data.title || data.thumbnail_url)
+		return Boolean(data.title || data.author_name || data.thumbnail_url)
 	}
 
 	if (!data.html) return false
@@ -128,19 +129,23 @@ watchEffect(async () => {
 
 	resetPreview()
 
-	const oembed = getOEmbedConfig(props.url)
+	const oembed = await resolveOEmbedConfig(props.url)
 	if (oembed) {
 		try {
 			const res = await fetch(proxyUrlFor(oembed.endpoint), { mode: 'cors' })
 			if (res.ok) {
-				const embedRes = (await res.json()) as OEmbedResponse
-				if (await applyOEmbed(embedRes, oembed.provider, oembed.scriptSrc)) {
+				const embedRes = parseOEmbedResponse(await res.text())
+				if (embedRes && await applyOEmbed(embedRes, oembed.provider, oembed.scriptSrc)) {
 					return
 				}
 			}
 		}
 		catch {
-			// Fall through to Open Graph scraping.
+			// Reddit/YouTube HTML scrapes are JS shells. Don't pretend they are previews.
+		}
+
+		if (oembed.provider === 'reddit' || oembed.provider === 'youtube') {
+			return
 		}
 	}
 

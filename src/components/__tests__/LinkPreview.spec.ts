@@ -35,6 +35,16 @@ const mockHtmlFetch = (html: string) => {
 	))
 }
 
+const mockJsonFetch = (data: unknown) => {
+	vi.stubGlobal('fetch', vi.fn(() =>
+		Promise.resolve({
+			ok: true,
+			text: () => Promise.resolve(JSON.stringify(data)),
+			json: () => Promise.resolve(data),
+		}),
+	))
+}
+
 afterEach(() => {
 	vi.unstubAllGlobals()
 	document.querySelectorAll('script[src*="widgets.js"]').forEach(script => script.remove())
@@ -58,19 +68,14 @@ describe('LinkPreview', () => {
 	})
 
 	it('uses YouTube oEmbed for title and thumbnail, not an iframe', async () => {
-		vi.stubGlobal('fetch', vi.fn(() =>
-			Promise.resolve({
-				ok: true,
-				json: () => Promise.resolve({
-					title: 'Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)',
-					author_name: 'Rick Astley',
-					type: 'video',
-					provider_name: 'YouTube',
-					html: '<iframe width="200" height="113" src="https://www.youtube.com/embed/dQw4w9WgXcQ?feature=oembed"></iframe>',
-					thumbnail_url: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
-				}),
-			}),
-		))
+		mockJsonFetch({
+			title: 'Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)',
+			author_name: 'Rick Astley',
+			type: 'video',
+			provider_name: 'YouTube',
+			html: '<iframe width="200" height="113" src="https://www.youtube.com/embed/dQw4w9WgXcQ?feature=oembed"></iframe>',
+			thumbnail_url: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
+		})
 
 		const wrapper = mount(LinkPreview, {
 			props: {
@@ -89,17 +94,12 @@ describe('LinkPreview', () => {
 	})
 
 	it('shows a static tweet until the user loads the official embed', async () => {
-		vi.stubGlobal('fetch', vi.fn(() =>
-			Promise.resolve({
-				ok: true,
-				json: () => Promise.resolve({
-					author_name: 'US Department of the Interior',
-					type: 'rich',
-					provider_name: 'Twitter',
-					html: '<blockquote class="twitter-tweet"><p>Sunsets</p></blockquote><script async src="https://platform.twitter.com/widgets.js"></script>',
-				}),
-			}),
-		))
+		mockJsonFetch({
+			author_name: 'US Department of the Interior',
+			type: 'rich',
+			provider_name: 'Twitter',
+			html: '<blockquote class="twitter-tweet"><p>Sunsets</p></blockquote><script async src="https://platform.twitter.com/widgets.js"></script>',
+		})
 
 		const wrapper = mount(LinkPreview, {
 			props: {
@@ -126,19 +126,14 @@ describe('LinkPreview', () => {
 		wrapper.unmount()
 	})
 
-	it('embeds Reddit posts via oEmbed', async () => {
-		vi.stubGlobal('fetch', vi.fn(() =>
-			Promise.resolve({
-				ok: true,
-				json: () => Promise.resolve({
-					title: 'test post please ignore',
-					author_name: 'qgyh2',
-					type: 'rich',
-					provider_name: 'reddit',
-					html: '<blockquote class="reddit-embed-bq"><a href="https://www.reddit.com/r/pics/comments/92dd8/test_post_please_ignore/">test post please ignore</a></blockquote><script async src="https://embed.reddit.com/widgets.js"></script>',
-				}),
-			}),
-		))
+	it('uses Reddit oEmbed for title and author, not a page scrape or widget', async () => {
+		mockJsonFetch({
+			title: 'test post please ignore',
+			author_name: 'qgyh2',
+			type: 'rich',
+			provider_name: 'reddit',
+			html: '<blockquote class="reddit-embed-bq"><a href="https://www.reddit.com/r/pics/comments/92dd8/test_post_please_ignore/">test post please ignore</a></blockquote><script async src="https://embed.reddit.com/widgets.js"></script>',
+		})
 
 		const wrapper = mount(LinkPreview, {
 			props: {
@@ -148,8 +143,38 @@ describe('LinkPreview', () => {
 		})
 
 		await flushPromises()
-		expect(wrapper.get('[data-cy="rich-embed"]').html()).toContain('reddit-embed-bq')
-		expect(wrapper.get('[data-cy="rich-embed"]').html()).not.toContain('widgets.js')
+		expect(wrapper.get('#title').text()).toBe('test post please ignore')
+		expect(wrapper.get('#description').text()).toBe('qgyh2')
+		expect(wrapper.find('[data-cy="rich-embed"]').exists()).toBe(false)
+		expect(wrapper.find('iframe').exists()).toBe(false)
+		expect(document.querySelector('script[src="https://embed.reddit.com/widgets.js"]')).toBeNull()
+	})
+
+	it('does not scrape Reddit HTML when oEmbed returns a non-JSON body', async () => {
+		vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL) => {
+			const url = String(input)
+			if (decodeURIComponent(url).includes('reddit.com/oembed')) {
+				return Promise.resolve({
+					ok: true,
+					text: () => Promise.resolve('invalid URL value'),
+				})
+			}
+			return Promise.resolve({
+				ok: true,
+				text: () => Promise.resolve('<html><title>Blocked</title></html>'),
+			})
+		}))
+
+		const wrapper = mount(LinkPreview, {
+			props: {
+				url: 'https://redd.it/92dd8',
+				timestamp: new Date().toISOString(),
+			},
+		})
+
+		await flushPromises()
+		expect(wrapper.get('#title').text()).toBe('Title not available')
+		expect(wrapper.find('#title').text()).not.toBe('Blocked')
 	})
 
 	it('renders a playable video if og:video meta tag is present', async () => {
