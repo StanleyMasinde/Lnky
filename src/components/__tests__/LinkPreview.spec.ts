@@ -87,6 +87,32 @@ describe('LinkPreview', () => {
 		expect(wrapper.find('[data-cy="youtube-embed"]').exists()).toBe(false)
 	})
 
+	it('embeds Reddit posts via oEmbed', async () => {
+		vi.stubGlobal('fetch', vi.fn(() =>
+			Promise.resolve({
+				ok: true,
+				json: () => Promise.resolve({
+					title: 'test post please ignore',
+					author_name: 'qgyh2',
+					type: 'rich',
+					provider_name: 'reddit',
+					html: '<blockquote class="reddit-embed-bq"><a href="https://www.reddit.com/r/pics/comments/92dd8/test_post_please_ignore/">test post please ignore</a></blockquote><script async src="https://embed.reddit.com/widgets.js"></script>',
+				}),
+			}),
+		))
+
+		const wrapper = mount(LinkPreview, {
+			props: {
+				url: 'https://www.reddit.com/r/pics/comments/92dd8/test_post_please_ignore/',
+				timestamp: new Date().toISOString(),
+			},
+		})
+
+		await flushPromises()
+		expect(wrapper.get('[data-cy="rich-embed"]').html()).toContain('reddit-embed-bq')
+		expect(wrapper.get('[data-cy="rich-embed"]').html()).not.toContain('widgets.js')
+	})
+
 	it('renders a playable video if og:video meta tag is present', async () => {
 		mockHtmlFetch(`<!DOCTYPE html>
 <html lang="en">

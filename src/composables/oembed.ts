@@ -1,4 +1,4 @@
-export type OEmbedProvider = 'twitter' | 'youtube'
+export type OEmbedProvider = 'twitter' | 'youtube' | 'reddit'
 
 export interface OEmbedConfig {
 	provider: OEmbedProvider
@@ -59,6 +59,27 @@ export const isYouTubeUrl = (rawUrl: string) => {
 	return /\/(watch|shorts|embed|live|v)\b/.test(url.pathname)
 }
 
+export const isRedditUrl = (rawUrl: string) => {
+	const url = parseUrl(rawUrl)
+	if (!url) return false
+	const host = hostnameOf(url)
+
+	if (host === 'redd.it') {
+		return url.pathname.length > 1
+	}
+
+	if (host !== 'reddit.com' && !host.endsWith('.reddit.com')) {
+		return false
+	}
+
+	return (
+		/\/r\/[^/]+\/comments\//.test(url.pathname)
+		|| /\/r\/[^/]+\/s\//.test(url.pathname)
+		|| /\/comments\//.test(url.pathname)
+		|| /\/user\/[^/]+\/comments\//.test(url.pathname)
+	)
+}
+
 export const getOEmbedConfig = (rawUrl: string): OEmbedConfig | null => {
 	const url = parseUrl(rawUrl)
 	if (!url) return null
@@ -80,6 +101,16 @@ export const getOEmbedConfig = (rawUrl: string): OEmbedConfig | null => {
 		return {
 			provider: 'youtube',
 			endpoint: endpoint.toString(),
+		}
+	}
+
+	if (isRedditUrl(rawUrl)) {
+		const endpoint = new URL('https://www.reddit.com/oembed')
+		endpoint.searchParams.set('url', url.toString())
+		return {
+			provider: 'reddit',
+			endpoint: endpoint.toString(),
+			scriptSrc: 'https://embed.reddit.com/widgets.js',
 		}
 	}
 

@@ -120,11 +120,12 @@ watchEffect(async () => {
 </script>
 
 <template>
-	<!-- Twitter (and other rich) oEmbed -->
+	<!-- Twitter / Reddit rich oEmbed -->
 	<div v-if="embedHtml"
 		class="p-4 rounded-lg shadow-md dark:bg-neutral-900 max-w-150 w-full overflow-x-auto mx-auto"
-		style="min-width: 320px;">
-		<div v-html="embedHtml" class="prose dark:prose-invert" data-cy="rich-embed" style="min-width: 550px;"></div>
+		:style="embedProvider === 'twitter' ? 'min-width: 320px;' : undefined">
+		<div v-html="embedHtml" class="prose dark:prose-invert" data-cy="rich-embed"
+			:style="embedProvider === 'twitter' ? 'min-width: 550px;' : undefined"></div>
 
 		<small class="text-xs font-semibold mt-2 text-gray-500 block text-right">
 			{{ new Date(props.timestamp).toLocaleString() }}
