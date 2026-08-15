@@ -1,3 +1,4 @@
+import { ensureShortDomains } from './shortDomains'
 import { useIsLoading } from './state'
 
 const trackingPatterns = {
@@ -93,43 +94,6 @@ const trackingPatterns = {
 	],
 }
 
-const shortDomains: string[] = []
-if (import.meta.env.TEST) {
-	shortDomains.push('youtu.be')
-}
-// Fetch short Links from IDB
-const fetchLinksReq = new Promise((resolve, reject) => {
-	const idbRequest = window.indexedDB.open('linksDb', 2)
-	idbRequest.onsuccess = (event) => {
-		if (!import.meta.env.TEST) {
-			const database: IDBDatabase = (event.target as IDBOpenDBRequest).result
-
-			const tx = database.transaction('shortLinks', 'readonly')
-			const linksStore = tx.objectStore('shortLinks')
-			const linksCursor = linksStore.openCursor()
-
-			linksCursor.onsuccess = (event) => {
-				const cursor = (event.target as IDBRequest).result as IDBCursorWithValue
-
-				if (cursor) {
-					shortDomains.unshift(cursor.value.domain)
-
-					cursor.continue()
-				}
-
-				resolve('OK')
-			}
-
-			linksCursor.onerror = (err) => {
-				reject(err)
-			}
-		}
-		else {
-			resolve('OK')
-		}
-	}
-})
-
 const expandUrl = async (shortUrl: string) => {
 	try {
 		useIsLoading().value = true
@@ -192,7 +156,7 @@ const removeTrackers = (dirtyLink: string) => {
 }
 
 export const useCleanLink = async (link: string) => {
-	await fetchLinksReq
+	const shortDomains = await ensureShortDomains()
 
 	let url: string = link
 	const domain = new URL(url).hostname

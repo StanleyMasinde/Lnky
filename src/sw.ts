@@ -8,87 +8,101 @@ export { }
  *  ----------------------------------------------------------
  */
 
-const cacheVersion = __APP_VERSION__
+import { shouldCacheResponse } from './pwa/cachePolicy'
+
+const cacheVersion = `lnky-${__APP_VERSION__}`
+const sw = self as unknown as ServiceWorkerGlobalScope
+
 const staticCache = [
 	'/',
 	'/icons/favicon.ico',
 	'/manifest.json',
 	'/saved-links',
-	'/icons/icon-192x192.png',
-	'/icons/icon-256x256.png',
-	'/icons/icon-384x384.png',
-	'/icons/icon-512x512.png',
+	'/icons/icon-192.png',
+	'/icons/icon-512.png',
 	'/icons/apple-touch-icon.png',
 	'/icons/icon-192-maskable.png',
 	'/icons/icon-512-maskable.png',
 ]
 
-const notToCacheURLs = [
-	'lnky.api.stanleymasinde.com',
-	'raw.githubusercontent.com/PeterDaveHello/url-shorteners/refs/heads/master/list',
-]
+const offlineResponse = () => new Response('It looks like you are offline', {
+	status: 503,
+	headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+})
 
-// Handle fetch
-const handleFetch = async (request: Request) => {
+const precache = async () => {
+	const cache = await caches.open(cacheVersion)
+	await Promise.all(staticCache.map(async (url) => {
+		try {
+			await cache.add(url)
+		}
+		catch {
+			// A missing file must not fail the whole install.
+		}
+	}))
+}
+
+const handleFetch = async (request: Request): Promise<Response> => {
 	if (request.mode === 'navigate') {
-		const cache = await caches.open(cacheVersion)
-		const fallback = await cache.match('/')
-		if (fallback) return fallback
+		try {
+			const networkResponse = await fetch(request)
+			if (networkResponse.ok) {
+				const cache = await caches.open(cacheVersion)
+				await cache.put('/', networkResponse.clone())
+			}
+			return networkResponse
+		}
+		catch {
+			const cache = await caches.open(cacheVersion)
+			const fallback = await cache.match('/')
+			if (fallback) {
+				return fallback
+			}
+			return offlineResponse()
+		}
 	}
 
-	const responseFromCache = await caches.match(request)
-	if (responseFromCache) {
-		return responseFromCache
+	const cache = await caches.open(cacheVersion)
+	const cached = await cache.match(request)
+	if (cached) {
+		return cached
 	}
 
 	try {
 		const networkResponse = await fetch(request)
-		if (!notToCacheURLs.includes(request.url)) { // Do not cache link expander reqs
-			const clonedResponse = networkResponse.clone()
-			const cache = await caches.open(cacheVersion)
-			await cache.put(request, clonedResponse)
+		if (shouldCacheResponse(request.url, request.method, networkResponse.ok, sw.location.origin)) {
+			await cache.put(request, networkResponse.clone())
 		}
-
 		return networkResponse
 	}
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	catch (error) {
-		return new Response('It looks like you are offline', { status: 503 })
+	catch {
+		return offlineResponse()
 	}
 }
 
-// Install event
-self.addEventListener('install', (event) => {
-	// @ts-expect-error I'm to sure how to do this
-	event.waitUntil(
-		caches.open(cacheVersion)
-			.then((cacheStore) => {
-				cacheStore.addAll(staticCache)
-			}),
-	)
+sw.addEventListener('install', (event) => {
+	event.waitUntil(precache())
 })
 
-// Activate event
-self.addEventListener('activate', (event) => {
-	const cacheToKeep = cacheVersion
-	// @ts-expect-error I'm not sure. I'll research
-	event.waitUntil(
-		caches
-			.keys()
-			.then(async (keys) => {
-				await Promise.all(
-					keys.map((cacheName) => {
-						if (cacheName !== cacheToKeep) {
-							return caches.delete(cacheName)
-						}
-					}),
-				)
-			}),
-	)
+sw.addEventListener('activate', (event) => {
+	event.waitUntil((async () => {
+		const keys = await caches.keys()
+		await Promise.all(
+			keys
+				.filter((name) => name !== cacheVersion)
+				.map((name) => caches.delete(name)),
+		)
+		await sw.clients.claim()
+	})())
 })
 
-// Fetch event
-self.addEventListener('fetch', (event) => {
-	// @ts-expect-error I'm not sure. I'll research
+sw.addEventListener('message', (event) => {
+	const data = event.data as { type?: string } | string | undefined
+	if (data === 'SKIP_WAITING' || (typeof data === 'object' && data?.type === 'SKIP_WAITING')) {
+		void sw.skipWaiting()
+	}
+})
+
+sw.addEventListener('fetch', (event) => {
 	event.respondWith(handleFetch(event.request))
 })

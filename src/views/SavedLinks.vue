@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import LinkPreview from '@/components/LinkPreview.vue'
+import { openLinksDb } from '@/composables/db'
 import type { Ref } from 'vue'
 import { ref, onMounted } from 'vue'
 
@@ -25,11 +26,7 @@ const deleteLink = () => {
 	if (!itemId) {
 		return
 	}
-	const openDbRequest = indexedDB.open('linksDb', 2)
-
-	openDbRequest.onsuccess = (event) => {
-		const db = (event.target as IDBOpenDBRequest)?.result as IDBDatabase
-
+	void openLinksDb().then((db) => {
 		const transaction = db.transaction('links', 'readwrite')
 		const objectStore = transaction.objectStore('links')
 
@@ -38,15 +35,12 @@ const deleteLink = () => {
 			fetchSavedNotes()
 			deleteRef.value?.close()
 		}
-	}
+	})
 }
 
 // Get all the saved link
 const fetchSavedNotes = () => {
-	const request = indexedDB.open('linksDb', 2)
-
-	request.onsuccess = (event) => {
-		const db = (event.target as IDBOpenDBRequest).result
+	void openLinksDb().then((db) => {
 		const tx = db.transaction('links', 'readonly')
 		const store = tx.objectStore('links')
 
@@ -63,7 +57,7 @@ const fetchSavedNotes = () => {
 				})).reverse()
 			}
 		}
-	}
+	})
 }
 
 // Share a given link
