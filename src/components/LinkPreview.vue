@@ -1,54 +1,63 @@
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue'
+import { nextTick, ref, watchEffect } from 'vue'
+import {
+	getOEmbedConfig,
+	responsiveOEmbedHtml,
+	type OEmbedProvider,
+	type OEmbedResponse,
+} from '@/composables/oembed'
 
-interface TwitterEmbed {
-	url: string
-	title: string
-	html: string
-	width: number | null
-	height: number | null
-	type: 'rich'
-	cache_age: string
-	provider_name: 'Twitter'
-	provider_url: string
-	version: '1.0'
-}
+const PROXY_ORIGIN = 'https://lnky.api.stanleymasinde.com'
 
 const props = defineProps<{ url: string, timestamp: string }>()
 const title = ref<string | undefined>()
 const image = ref<string | undefined>()
 const description = ref<string | undefined>()
-const isTweet = ref<boolean>(false)
-const tweetEmbedHtml = ref<string | undefined>()
+const embedHtml = ref<string | undefined>()
+const embedProvider = ref<OEmbedProvider | undefined>()
+const embedAuthor = ref<string | undefined>()
 const video = ref<string | undefined>()
 
-watchEffect(async () => {
-	if (!props.url) return
-
-	const proxyUrl = new URL(`https://lnky.api.stanleymasinde.com`)
+const proxyUrlFor = (target: string) => {
+	const proxyUrl = new URL(PROXY_ORIGIN)
 	proxyUrl.pathname = 'proxy'
+	proxyUrl.searchParams.set('url', target)
+	return proxyUrl
+}
 
-	const isTweetUrl = /^(https?:\/\/)?(twitter\.com|x\.com)\/[^/]+\/status\/\d+/.test(props.url)
-	if (isTweetUrl) {
-		const twitterEmbedURL = new URL('https://publish.twitter.com/oembed')
-		isTweet.value = true
-
-		twitterEmbedURL.searchParams.set('url', props.url)
-		proxyUrl.searchParams.set('url', twitterEmbedURL.toString())
-
-		const res = await fetch(proxyUrl.toString(), { mode: 'cors' })
-		const embedRes = (await res.json()) as TwitterEmbed
-
-		tweetEmbedHtml.value = embedRes.html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-	}
-	else {
-		proxyUrl.search = `url=${props.url}`
+const loadWidgetScript = (src: string) => {
+	const existing = document.querySelector(`script[src="${src}"]`)
+	if (existing) {
+		const twitter = (window as unknown as { twttr?: { widgets?: { load?: () => void } } }).twttr
+		twitter?.widgets?.load?.()
+		return
 	}
 
-	const res = await fetch(proxyUrl, { mode: 'cors' })
-	const htmlRes = await res.text()
-	const domParser = new DOMParser()
-	const parsed = domParser.parseFromString(htmlRes, 'text/html')
+	const script = document.createElement('script')
+	script.src = src
+	script.async = true
+	document.body.appendChild(script)
+}
+
+const applyOEmbed = async (data: OEmbedResponse, provider: OEmbedProvider, scriptSrc?: string) => {
+	if (!data.html) return false
+
+	embedProvider.value = provider
+	embedHtml.value = responsiveOEmbedHtml(data.html, provider)
+	title.value = data.title
+	image.value = data.thumbnail_url
+	embedAuthor.value = data.author_name
+
+	if (scriptSrc) {
+		await nextTick()
+		loadWidgetScript(scriptSrc)
+	}
+
+	return true
+}
+
+const applyOpenGraph = (htmlRes: string) => {
+	const parsed = new DOMParser().parseFromString(htmlRes, 'text/html')
 
 	title.value = parsed.title
 	image.value = parsed
@@ -62,21 +71,77 @@ watchEffect(async () => {
 		)
 		?.getAttribute('content') || undefined
 
-	// Detect video meta tags
 	video.value = parsed
 		.querySelector(
 			'meta[property="og:video"], meta[name="twitter:player"], meta[itemprop="video"]',
 		)
 		?.getAttribute('content') || undefined
+}
+
+const resetPreview = () => {
+	title.value = undefined
+	image.value = undefined
+	description.value = undefined
+	embedHtml.value = undefined
+	embedProvider.value = undefined
+	embedAuthor.value = undefined
+	video.value = undefined
+}
+
+watchEffect(async () => {
+	if (!props.url) return
+
+	resetPreview()
+
+	const oembed = getOEmbedConfig(props.url)
+	if (oembed) {
+		try {
+			const res = await fetch(proxyUrlFor(oembed.endpoint), { mode: 'cors' })
+			if (res.ok) {
+				const embedRes = (await res.json()) as OEmbedResponse
+				if (await applyOEmbed(embedRes, oembed.provider, oembed.scriptSrc)) {
+					return
+				}
+			}
+		}
+		catch {
+			// Fall through to Open Graph scraping.
+		}
+	}
+
+	const res = await fetch(proxyUrlFor(props.url), { mode: 'cors' })
+	applyOpenGraph(await res.text())
 })
 </script>
 
 <template>
-	<!-- Twitter Embed -->
-	<div v-if="isTweet"
+	<!-- YouTube oEmbed player -->
+	<div v-if="embedHtml && embedProvider === 'youtube'"
+		class="flex flex-col p-4 border rounded-lg w-full overflow-hidden">
+		<div class="aspect-video w-full bg-black rounded-md overflow-hidden [&>iframe]:h-full [&>iframe]:w-full"
+			data-cy="youtube-embed" v-html="embedHtml"></div>
+		<div class="flex flex-col w-full mt-4">
+			<h1 id="title" class="font-semibold text-lg line-clamp-3">
+				{{ title || 'Title not available' }}
+			</h1>
+			<p v-if="embedAuthor" id="description" class="text-sm text-gray-600 line-clamp-5 mt-2">
+				{{ embedAuthor }}
+			</p>
+			<a class="text-primary underline hover:text-primary text-sm mt-2 line-clamp-1" :href="props.url"
+				target="_blank">
+				{{ props.url }}
+			</a>
+			<small class="text-xs font-semibold mt-2 text-gray-500">
+				{{ new Date(props.timestamp).toLocaleString() }}
+			</small>
+		</div>
+	</div>
+
+	<!-- Twitter (and other rich) oEmbed -->
+	<div v-else-if="embedHtml"
 		class="p-4 rounded-lg shadow-md dark:bg-neutral-900 max-w-150 w-full overflow-x-auto mx-auto"
 		style="min-width: 320px;">
-		<div v-html="tweetEmbedHtml" class="prose dark:prose-invert" style="min-width: 550px;"></div>
+		<div v-html="embedHtml" class="prose dark:prose-invert" data-cy="rich-embed" style="min-width: 550px;"></div>
 
 		<small class="text-xs font-semibold mt-2 text-gray-500 block text-right">
 			{{ new Date(props.timestamp).toLocaleString() }}
@@ -103,7 +168,7 @@ watchEffect(async () => {
 		</div>
 	</div>
 
-	<!-- OG Metadata Preview (Non-Twitter URLs) -->
+	<!-- OG Metadata Preview -->
 	<div v-else
 		class="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4 p-4 border rounded-lg w-full overflow-hidden">
 		<div v-if="image" class="w-full md:w-[40%] shrink-0">

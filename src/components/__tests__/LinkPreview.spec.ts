@@ -1,10 +1,8 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import LinkPreview from '../LinkPreview.vue'
 
-vi.stubGlobal('fetch', vi.fn(() =>
-	Promise.resolve({
-		text: () => Promise.resolve(`<!DOCTYPE html>
+const siteHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -25,12 +23,26 @@ vi.stubGlobal('fetch', vi.fn(() =>
 <body>
   <h1>Welcome to the Official Website of Stanley Masinde</h1>
 </body>
-</html>`),
-	}),
-))
+</html>`
+
+const mockHtmlFetch = (html: string) => {
+	vi.stubGlobal('fetch', vi.fn(() =>
+		Promise.resolve({
+			ok: true,
+			text: () => Promise.resolve(html),
+			json: () => Promise.reject(new Error('not json')),
+		}),
+	))
+}
+
+afterEach(() => {
+	vi.unstubAllGlobals()
+})
 
 describe('LinkPreview', () => {
 	it('renders properly', async () => {
+		mockHtmlFetch(siteHtml)
+
 		const wrapper = mount(LinkPreview, {
 			props: {
 				url: 'https://stanleymasinde.com',
@@ -44,22 +56,45 @@ describe('LinkPreview', () => {
 		expect(wrapper.get('#description').text()).toBe('Official website of Stanley Masinde, a Software Engineer specializing in fullstack development, systems programming, and Rust.')
 	})
 
-	it('renders a playable video if og:video meta tag is present', async () => {
-		// Mock fetch to return HTML with og:video
+	it('embeds YouTube videos via oEmbed instead of a raw video tag', async () => {
 		vi.stubGlobal('fetch', vi.fn(() =>
 			Promise.resolve({
-				text: () => Promise.resolve(`<!DOCTYPE html>
-<html lang=\"en\">
+				ok: true,
+				json: () => Promise.resolve({
+					title: 'Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)',
+					author_name: 'Rick Astley',
+					type: 'video',
+					provider_name: 'YouTube',
+					html: '<iframe width="200" height="113" src="https://www.youtube.com/embed/dQw4w9WgXcQ?feature=oembed"></iframe>',
+					thumbnail_url: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
+				}),
+			}),
+		))
+
+		const wrapper = mount(LinkPreview, {
+			props: {
+				url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+				timestamp: new Date().toISOString(),
+			},
+		})
+
+		await flushPromises()
+		expect(wrapper.get('#title').text()).toContain('Never Gonna Give You Up')
+		expect(wrapper.get('[data-cy="youtube-embed"]').html()).toContain('youtube.com/embed/dQw4w9WgXcQ')
+		expect(wrapper.find('video').exists()).toBe(false)
+	})
+
+	it('renders a playable video if og:video meta tag is present', async () => {
+		mockHtmlFetch(`<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta property=\"og:title\" content=\"Video Test\">
-  <meta property=\"og:description\" content=\"A test video\">
-  <meta property=\"og:video\" content=\"https://example.com/video.mp4\">
+  <meta property="og:title" content="Video Test">
+  <meta property="og:description" content="A test video">
+  <meta property="og:video" content="https://example.com/video.mp4">
   <title>Video Test</title>
 </head>
 <body></body>
-</html>`),
-			}),
-		))
+</html>`)
 
 		const wrapper = mount(LinkPreview, {
 			props: {
