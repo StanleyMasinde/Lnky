@@ -2,7 +2,7 @@
 import { nextTick, ref, watchEffect } from 'vue'
 import {
 	getOEmbedConfig,
-	responsiveOEmbedHtml,
+	stripScripts,
 	type OEmbedProvider,
 	type OEmbedResponse,
 } from '@/composables/oembed'
@@ -15,7 +15,6 @@ const image = ref<string | undefined>()
 const description = ref<string | undefined>()
 const embedHtml = ref<string | undefined>()
 const embedProvider = ref<OEmbedProvider | undefined>()
-const embedAuthor = ref<string | undefined>()
 const video = ref<string | undefined>()
 
 const proxyUrlFor = (target: string) => {
@@ -40,13 +39,18 @@ const loadWidgetScript = (src: string) => {
 }
 
 const applyOEmbed = async (data: OEmbedResponse, provider: OEmbedProvider, scriptSrc?: string) => {
-	if (!data.html) return false
-
 	embedProvider.value = provider
-	embedHtml.value = responsiveOEmbedHtml(data.html, provider)
 	title.value = data.title
 	image.value = data.thumbnail_url
-	embedAuthor.value = data.author_name
+
+	if (provider === 'youtube') {
+		description.value = data.author_name
+		return Boolean(data.title || data.thumbnail_url)
+	}
+
+	if (!data.html) return false
+
+	embedHtml.value = stripScripts(data.html)
 
 	if (scriptSrc) {
 		await nextTick()
@@ -56,7 +60,7 @@ const applyOEmbed = async (data: OEmbedResponse, provider: OEmbedProvider, scrip
 	return true
 }
 
-const applyOpenGraph = (htmlRes: string) => {
+const applyOpenGraph = (htmlRes: string, skipVideo = false) => {
 	const parsed = new DOMParser().parseFromString(htmlRes, 'text/html')
 
 	title.value = parsed.title
@@ -71,6 +75,8 @@ const applyOpenGraph = (htmlRes: string) => {
 		)
 		?.getAttribute('content') || undefined
 
+	if (skipVideo) return
+
 	video.value = parsed
 		.querySelector(
 			'meta[property="og:video"], meta[name="twitter:player"], meta[itemprop="video"]',
@@ -84,7 +90,6 @@ const resetPreview = () => {
 	description.value = undefined
 	embedHtml.value = undefined
 	embedProvider.value = undefined
-	embedAuthor.value = undefined
 	video.value = undefined
 }
 
@@ -110,35 +115,13 @@ watchEffect(async () => {
 	}
 
 	const res = await fetch(proxyUrlFor(props.url), { mode: 'cors' })
-	applyOpenGraph(await res.text())
+	applyOpenGraph(await res.text(), oembed?.provider === 'youtube')
 })
 </script>
 
 <template>
-	<!-- YouTube oEmbed player -->
-	<div v-if="embedHtml && embedProvider === 'youtube'"
-		class="flex flex-col p-4 border rounded-lg w-full overflow-hidden">
-		<div class="aspect-video w-full bg-black rounded-md overflow-hidden [&>iframe]:h-full [&>iframe]:w-full"
-			data-cy="youtube-embed" v-html="embedHtml"></div>
-		<div class="flex flex-col w-full mt-4">
-			<h1 id="title" class="font-semibold text-lg line-clamp-3">
-				{{ title || 'Title not available' }}
-			</h1>
-			<p v-if="embedAuthor" id="description" class="text-sm text-gray-600 line-clamp-5 mt-2">
-				{{ embedAuthor }}
-			</p>
-			<a class="text-primary underline hover:text-primary text-sm mt-2 line-clamp-1" :href="props.url"
-				target="_blank">
-				{{ props.url }}
-			</a>
-			<small class="text-xs font-semibold mt-2 text-gray-500">
-				{{ new Date(props.timestamp).toLocaleString() }}
-			</small>
-		</div>
-	</div>
-
 	<!-- Twitter (and other rich) oEmbed -->
-	<div v-else-if="embedHtml"
+	<div v-if="embedHtml"
 		class="p-4 rounded-lg shadow-md dark:bg-neutral-900 max-w-150 w-full overflow-x-auto mx-auto"
 		style="min-width: 320px;">
 		<div v-html="embedHtml" class="prose dark:prose-invert" data-cy="rich-embed" style="min-width: 550px;"></div>

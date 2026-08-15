@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getOEmbedConfig, isTweetUrl, isYouTubeUrl, responsiveOEmbedHtml } from '../oembed'
+import { getOEmbedConfig, isTweetUrl, isYouTubeUrl } from '../oembed'
 
 describe('oEmbed helpers', () => {
 	it('detects tweet and YouTube URLs', () => {
@@ -29,10 +29,4 @@ describe('oEmbed helpers', () => {
 		expect(config?.scriptSrc).toBe('https://platform.twitter.com/widgets.js')
 	})
 
-	it('makes YouTube iframe markup fill its container', () => {
-		const html = '<iframe width="200" height="113" src="https://www.youtube.com/embed/dQw4w9WgXcQ?feature=oembed"></iframe>'
-		expect(responsiveOEmbedHtml(html, 'youtube')).toBe(
-			'<iframe width="100%" height="100%" src="https://www.youtube.com/embed/dQw4w9WgXcQ?feature=oembed"></iframe>',
-		)
-	})
 })

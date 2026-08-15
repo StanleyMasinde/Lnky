@@ -77,7 +77,6 @@ export const getOEmbedConfig = (rawUrl: string): OEmbedConfig | null => {
 		const endpoint = new URL('https://www.youtube.com/oembed')
 		endpoint.searchParams.set('url', url.toString())
 		endpoint.searchParams.set('format', 'json')
-		endpoint.searchParams.set('maxwidth', '1280')
 		return {
 			provider: 'youtube',
 			endpoint: endpoint.toString(),
@@ -88,12 +87,3 @@ export const getOEmbedConfig = (rawUrl: string): OEmbedConfig | null => {
 }
 
 export const stripScripts = (html: string) => html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-
-export const responsiveOEmbedHtml = (html: string, provider: OEmbedProvider) => {
-	const withoutScripts = stripScripts(html)
-	if (provider !== 'youtube') return withoutScripts
-
-	return withoutScripts
-		.replace(/\swidth="\d+"/i, ' width="100%"')
-		.replace(/\sheight="\d+"/i, ' height="100%"')
-}

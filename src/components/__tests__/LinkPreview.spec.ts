@@ -56,7 +56,7 @@ describe('LinkPreview', () => {
 		expect(wrapper.get('#description').text()).toBe('Official website of Stanley Masinde, a Software Engineer specializing in fullstack development, systems programming, and Rust.')
 	})
 
-	it('embeds YouTube videos via oEmbed instead of a raw video tag', async () => {
+	it('uses YouTube oEmbed for title and thumbnail, not an iframe', async () => {
 		vi.stubGlobal('fetch', vi.fn(() =>
 			Promise.resolve({
 				ok: true,
@@ -80,8 +80,11 @@ describe('LinkPreview', () => {
 
 		await flushPromises()
 		expect(wrapper.get('#title').text()).toContain('Never Gonna Give You Up')
-		expect(wrapper.get('[data-cy="youtube-embed"]').html()).toContain('youtube.com/embed/dQw4w9WgXcQ')
+		expect(wrapper.get('img').attributes('src')).toBe('https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg')
+		expect(wrapper.get('#description').text()).toBe('Rick Astley')
+		expect(wrapper.find('iframe').exists()).toBe(false)
 		expect(wrapper.find('video').exists()).toBe(false)
+		expect(wrapper.find('[data-cy="youtube-embed"]').exists()).toBe(false)
 	})
 
 	it('renders a playable video if og:video meta tag is present', async () => {
