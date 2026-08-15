@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { nextTick, ref, watchEffect } from 'vue'
 import {
+	isRedditHostUrl,
 	parseOEmbedResponse,
 	resolveOEmbedConfig,
 	stripScripts,
@@ -147,6 +148,12 @@ watchEffect(async () => {
 		if (oembed.provider === 'reddit' || oembed.provider === 'youtube') {
 			return
 		}
+	}
+
+	// Reddit's HTML endpoint is a WAF wall ("blocked by network security").
+	// Never send reddit.com through the page scraper.
+	if (isRedditHostUrl(props.url) || oembed?.provider === 'reddit') {
+		return
 	}
 
 	const res = await fetch(proxyUrlFor(props.url), { mode: 'cors' })

@@ -26,7 +26,9 @@ describe('oEmbed helpers', () => {
 		expect(isRedditUrl('https://old.reddit.com/r/pics/comments/92dd8/test_post_please_ignore/')).toBe(true)
 		expect(isRedditUrl('https://www.reddit.com/comments/92dd8')).toBe(true)
 		expect(isRedditUrl('https://redd.it/92dd8')).toBe(true)
-		expect(isRedditUrl('https://www.reddit.com/r/pics/')).toBe(false)
+		expect(isRedditUrl('https://www.reddit.com/r/pics/')).toBe(true)
+		expect(isRedditUrl('https://www.reddit.com/r/pics/s/AbCdEf')).toBe(true)
+		expect(isRedditUrl('https://example.com/r/pics/comments/92dd8')).toBe(false)
 	})
 
 	it('builds the YouTube oEmbed endpoint', () => {
@@ -66,6 +68,12 @@ describe('oEmbed helpers', () => {
 
 		const short = getOEmbedConfig('https://redd.it/92dd8')
 		expect(short?.endpoint).toContain(encodeURIComponent('https://www.reddit.com/r/all/comments/92dd8'))
+	})
+
+	it('still builds an oEmbed request for Reddit share URLs', () => {
+		const config = getOEmbedConfig('https://www.reddit.com/r/pics/s/AbCdEf')
+		expect(config?.provider).toBe('reddit')
+		expect(config?.endpoint).toContain('https://www.reddit.com/oembed')
 	})
 
 	it('ignores non-JSON Reddit oEmbed bodies instead of throwing', () => {

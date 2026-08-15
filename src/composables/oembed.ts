@@ -59,7 +59,16 @@ export const isYouTubeUrl = (rawUrl: string) => {
 	return /\/(watch|shorts|embed|live|v)\b/.test(url.pathname)
 }
 
-const isRedditHost = (host: string) => host === 'reddit.com' || host.endsWith('.reddit.com') || host === 'redd.it'
+const isRedditHost = (host: string) =>
+	host === 'reddit.com'
+	|| host.endsWith('.reddit.com')
+	|| host === 'redd.it'
+	|| host.endsWith('.redd.it')
+
+export const isRedditHostUrl = (rawUrl: string) => {
+	const url = parseUrl(rawUrl)
+	return !!url && isRedditHost(hostnameOf(url))
+}
 
 const redditPostIdFromPath = (pathname: string) => {
 	const comments = pathname.match(/\/comments\/([a-z0-9]+)/i)
@@ -84,17 +93,7 @@ export const isRedditUrl = (rawUrl: string) => {
 		return url.pathname.length > 1
 	}
 
-	if (!isRedditHost(host)) {
-		return false
-	}
-
-	return (
-		/\/r\/[^/]+\/comments\//.test(url.pathname)
-		|| /\/r\/[^/]+\/s\//.test(url.pathname)
-		|| /\/comments\/[a-z0-9]+/i.test(url.pathname)
-		|| /\/gallery\/[a-z0-9]+/i.test(url.pathname)
-		|| /\/user\/[^/]+\/comments\//.test(url.pathname)
-	)
+	return isRedditHost(host)
 }
 
 // Reddit oEmbed rejects redd.it and /comments/{id} without a subreddit.
@@ -170,12 +169,9 @@ export const getOEmbedConfig = (rawUrl: string): OEmbedConfig | null => {
 		}
 	}
 
-	if (isRedditUrl(rawUrl)) {
-		const canonical = canonicalRedditUrl(rawUrl)
-		if (!canonical) return null
-
+	if (isRedditHostUrl(rawUrl)) {
 		const endpoint = new URL('https://www.reddit.com/oembed')
-		endpoint.searchParams.set('url', canonical)
+		endpoint.searchParams.set('url', canonicalRedditUrl(rawUrl) || url.toString())
 		return {
 			provider: 'reddit',
 			endpoint: endpoint.toString(),
@@ -186,15 +182,15 @@ export const getOEmbedConfig = (rawUrl: string): OEmbedConfig | null => {
 }
 
 export const resolveOEmbedConfig = async (rawUrl: string): Promise<OEmbedConfig | null> => {
-	const immediate = getOEmbedConfig(rawUrl)
-	if (immediate) return immediate
-
-	if (!isRedditShareUrl(rawUrl) && !isRedditUrl(rawUrl)) {
-		return null
+	if (isRedditShareUrl(rawUrl) || (isRedditHostUrl(rawUrl) && !canonicalRedditUrl(rawUrl))) {
+		const expanded = await expandShortUrl(rawUrl)
+		if (expanded) {
+			const fromExpanded = getOEmbedConfig(expanded)
+			if (fromExpanded) return fromExpanded
+		}
 	}
 
-	const expanded = await expandShortUrl(rawUrl)
-	return expanded ? getOEmbedConfig(expanded) : null
+	return getOEmbedConfig(rawUrl)
 }
 
 export const stripScripts = (html: string) => html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
