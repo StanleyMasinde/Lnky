@@ -1,6 +1,10 @@
 import { ref } from 'vue'
-
-const INSTALL_HINT_KEY = 'lnky.dismissedInstallHint'
+import {
+	INSTALL_HINT_KEY,
+	isIosDevice,
+	isStandaloneDisplay,
+	shouldAutoPromptInstall,
+} from './installPrompt'
 
 interface BeforeInstallPromptEvent extends Event {
 	prompt: () => Promise<void>
@@ -9,21 +13,53 @@ interface BeforeInstallPromptEvent extends Event {
 
 export const updateAvailable = ref(false)
 export const canInstall = ref(false)
-export const showIosInstallHint = ref(false)
+export const showInstallPrompt = ref(false)
+export const isIosClient = ref(false)
+export const isStandaloneClient = ref(false)
+export const needsManualInstall = ref(false)
 
 let deferredPrompt: BeforeInstallPromptEvent | null = null
 let registration: ServiceWorkerRegistration | null = null
 let refreshing = false
 let initialized = false
 
-const isStandalone = () =>
-	window.matchMedia('(display-mode: standalone)').matches
-	|| Boolean((navigator as Navigator & { standalone?: boolean }).standalone)
+const currentStandalone = () =>
+	isStandaloneDisplay(
+		window.matchMedia('(display-mode: standalone)').matches,
+		Boolean((navigator as Navigator & { standalone?: boolean }).standalone),
+	)
 
-const isIos = () => {
-	const ua = navigator.userAgent
-	return /iphone|ipad|ipod/i.test(ua)
-		|| (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+const currentIos = () =>
+	isIosDevice(navigator.userAgent, navigator.platform, navigator.maxTouchPoints)
+
+const onBeforeInstall = (event: Event) => {
+	event.preventDefault()
+	deferredPrompt = event as BeforeInstallPromptEvent
+	canInstall.value = !currentStandalone()
+	needsManualInstall.value = false
+
+	if (shouldAutoPromptInstall(
+		window.location.search,
+		currentStandalone(),
+		Boolean(localStorage.getItem(INSTALL_HINT_KEY)),
+	)) {
+		showInstallPrompt.value = true
+	}
+}
+
+const onAppInstalled = () => {
+	deferredPrompt = null
+	canInstall.value = false
+	needsManualInstall.value = false
+	isStandaloneClient.value = true
+	showInstallPrompt.value = false
+}
+
+const requestUpdateCheck = () => {
+	if (document.visibilityState && document.visibilityState !== 'visible') {
+		return
+	}
+	void registration?.update()
 }
 
 const watchWorker = (worker: ServiceWorker | null) => {
@@ -45,37 +81,42 @@ const watchWorker = (worker: ServiceWorker | null) => {
 	})
 }
 
-const onBeforeInstall = (event: Event) => {
-	event.preventDefault()
-	deferredPrompt = event as BeforeInstallPromptEvent
-	canInstall.value = !isStandalone()
-}
-
-const requestUpdateCheck = () => {
-	if (document.visibilityState && document.visibilityState !== 'visible') {
-		return
-	}
-	void registration?.update()
-}
-
 export function applyUpdate(): void {
 	registration?.waiting?.postMessage('SKIP_WAITING')
 }
 
 export async function installApp(): Promise<void> {
 	if (!deferredPrompt) {
+		needsManualInstall.value = !isIosClient.value
+		showInstallPrompt.value = true
 		return
 	}
 
 	await deferredPrompt.prompt()
-	await deferredPrompt.userChoice
+	const { outcome } = await deferredPrompt.userChoice
 	deferredPrompt = null
 	canInstall.value = false
+
+	if (outcome === 'accepted') {
+		showInstallPrompt.value = false
+		return
+	}
+
+	needsManualInstall.value = true
 }
 
-export function dismissIosInstallHint(): void {
+export function dismissInstallPrompt(): void {
 	localStorage.setItem(INSTALL_HINT_KEY, '1')
-	showIosInstallHint.value = false
+	showInstallPrompt.value = false
+}
+
+export function openInstallPrompt(): void {
+	if (isStandaloneClient.value) {
+		return
+	}
+
+	needsManualInstall.value = !canInstall.value && !isIosClient.value
+	showInstallPrompt.value = true
 }
 
 export function initPwa(): void {
@@ -84,11 +125,19 @@ export function initPwa(): void {
 	}
 	initialized = true
 
-	if (!isStandalone() && isIos() && !localStorage.getItem(INSTALL_HINT_KEY)) {
-		showIosInstallHint.value = true
+	isIosClient.value = currentIos()
+	isStandaloneClient.value = currentStandalone()
+
+	if (shouldAutoPromptInstall(
+		window.location.search,
+		isStandaloneClient.value,
+		Boolean(localStorage.getItem(INSTALL_HINT_KEY)),
+	)) {
+		showInstallPrompt.value = true
 	}
 
 	window.addEventListener('beforeinstallprompt', onBeforeInstall)
+	window.addEventListener('appinstalled', onAppInstalled)
 	document.addEventListener('visibilitychange', requestUpdateCheck)
 	window.addEventListener('focus', requestUpdateCheck)
 

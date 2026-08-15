@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
-import { applyUpdate, canInstall, dismissIosInstallHint, installApp, showIosInstallHint, updateAvailable } from './pwa/register'
+import InstallPrompt from './components/InstallPrompt.vue'
+import {
+	applyUpdate,
+	isStandaloneClient,
+	openInstallPrompt,
+	showInstallPrompt,
+	updateAvailable,
+} from './pwa/register'
 
 const version = __APP_VERSION__
 </script>
@@ -24,27 +31,16 @@ const version = __APP_VERSION__
 				Reload
 			</button>
 		</div>
-
-		<div v-else-if="canInstall"
-			class="flex items-center justify-between gap-3 rounded-lg border border-neutral-300 bg-white p-3 text-sm shadow-lg dark:border-neutral-700 dark:bg-neutral-900">
-			<p>Install Lnky for share-sheet cleaning.</p>
-			<button type="button" class="shrink-0 rounded-lg bg-primary px-3 py-2 font-semibold text-white"
-				@click="installApp">
-				Install
-			</button>
-		</div>
-
-		<div v-else-if="showIosInstallHint"
-			class="flex items-start justify-between gap-3 rounded-lg border border-neutral-300 bg-white p-3 text-sm shadow-lg dark:border-neutral-700 dark:bg-neutral-900">
-			<p>On iPhone, tap Share, then <strong>Add to Home Screen</strong> so Lnky opens as an app.</p>
-			<button type="button" class="shrink-0 rounded-lg bg-gray-200 px-3 py-2 font-semibold dark:bg-neutral-700"
-				@click="dismissIosInstallHint">
-				Got it
-			</button>
-		</div>
 	</div>
+
+	<InstallPrompt />
 
 	<footer class="p-4 text-center text-sm text-gray-500">
 		App version: {{ version }}
+		<button v-if="!isStandaloneClient && !showInstallPrompt" type="button"
+			class="ml-2 underline decoration-primary underline-offset-2 hover:text-primary" data-cy="open-install"
+			@click="openInstallPrompt">
+			Install app
+		</button>
 	</footer>
 </template>
