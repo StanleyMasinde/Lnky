@@ -3,6 +3,8 @@ import { nextTick, ref, watchEffect } from 'vue'
 import {
 	getOEmbedConfig,
 	stripScripts,
+	toLiveTweetHtml,
+	toStaticTweetHtml,
 	type OEmbedProvider,
 	type OEmbedResponse,
 } from '@/composables/oembed'
@@ -16,6 +18,10 @@ const description = ref<string | undefined>()
 const embedHtml = ref<string | undefined>()
 const embedProvider = ref<OEmbedProvider | undefined>()
 const video = ref<string | undefined>()
+const twitterScriptSrc = ref<string | undefined>()
+const twitterSourceHtml = ref<string | undefined>()
+const twitterEmbedLoaded = ref(false)
+const embedRoot = ref<HTMLElement>()
 
 const proxyUrlFor = (target: string) => {
 	const proxyUrl = new URL(PROXY_ORIGIN)
@@ -24,18 +30,32 @@ const proxyUrlFor = (target: string) => {
 	return proxyUrl
 }
 
-const loadWidgetScript = (src: string) => {
+const twitterWidgets = () =>
+	(window as unknown as { twttr?: { widgets?: { load?: (root?: HTMLElement) => void } } }).twttr
+
+const loadWidgetScript = (src: string, root?: HTMLElement) => {
 	const existing = document.querySelector(`script[src="${src}"]`)
 	if (existing) {
-		const twitter = (window as unknown as { twttr?: { widgets?: { load?: () => void } } }).twttr
-		twitter?.widgets?.load?.()
+		twitterWidgets()?.widgets?.load?.(root)
 		return
 	}
 
 	const script = document.createElement('script')
 	script.src = src
 	script.async = true
+	script.addEventListener('load', () => {
+		twitterWidgets()?.widgets?.load?.(root)
+	})
 	document.body.appendChild(script)
+}
+
+const activateTwitterEmbed = async () => {
+	if (!twitterSourceHtml.value || !twitterScriptSrc.value || twitterEmbedLoaded.value) return
+
+	embedHtml.value = toLiveTweetHtml(twitterSourceHtml.value)
+	twitterEmbedLoaded.value = true
+	await nextTick()
+	loadWidgetScript(twitterScriptSrc.value, embedRoot.value)
 }
 
 const applyOEmbed = async (data: OEmbedResponse, provider: OEmbedProvider, scriptSrc?: string) => {
@@ -49,6 +69,13 @@ const applyOEmbed = async (data: OEmbedResponse, provider: OEmbedProvider, scrip
 	}
 
 	if (!data.html) return false
+
+	if (provider === 'twitter' && scriptSrc) {
+		twitterSourceHtml.value = data.html
+		twitterScriptSrc.value = scriptSrc
+		embedHtml.value = toStaticTweetHtml(data.html)
+		return true
+	}
 
 	embedHtml.value = stripScripts(data.html)
 
@@ -91,6 +118,9 @@ const resetPreview = () => {
 	embedHtml.value = undefined
 	embedProvider.value = undefined
 	video.value = undefined
+	twitterScriptSrc.value = undefined
+	twitterSourceHtml.value = undefined
+	twitterEmbedLoaded.value = false
 }
 
 watchEffect(async () => {
@@ -121,11 +151,22 @@ watchEffect(async () => {
 
 <template>
 	<!-- Twitter / Reddit rich oEmbed -->
-	<div v-if="embedHtml"
+	<div v-if="embedHtml" ref="embedRoot"
 		class="p-4 rounded-lg shadow-md dark:bg-neutral-900 max-w-150 w-full overflow-x-auto mx-auto"
-		:style="embedProvider === 'twitter' ? 'min-width: 320px;' : undefined">
+		:style="embedProvider === 'twitter' && twitterEmbedLoaded ? 'min-width: 320px;' : undefined">
 		<div v-html="embedHtml" class="prose dark:prose-invert" data-cy="rich-embed"
-			:style="embedProvider === 'twitter' ? 'min-width: 550px;' : undefined"></div>
+			:style="embedProvider === 'twitter' && twitterEmbedLoaded ? 'min-width: 550px;' : undefined"></div>
+
+		<div v-if="embedProvider === 'twitter' && !twitterEmbedLoaded" class="mt-3 space-y-2">
+			<button type="button" data-cy="load-twitter-embed"
+				class="bg-primary text-white py-2 px-5 rounded-lg font-semibold transition duration-200 hover:bg-primary/90"
+				@click="activateTwitterEmbed">
+				Load tweet
+			</button>
+			<p class="text-xs text-gray-500">
+				Loads X’s embed script, which can set cookies.
+			</p>
+		</div>
 
 		<small class="text-xs font-semibold mt-2 text-gray-500 block text-right">
 			{{ new Date(props.timestamp).toLocaleString() }}

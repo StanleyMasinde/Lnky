@@ -37,6 +37,7 @@ const mockHtmlFetch = (html: string) => {
 
 afterEach(() => {
 	vi.unstubAllGlobals()
+	document.querySelectorAll('script[src*="widgets.js"]').forEach(script => script.remove())
 })
 
 describe('LinkPreview', () => {
@@ -85,6 +86,44 @@ describe('LinkPreview', () => {
 		expect(wrapper.find('iframe').exists()).toBe(false)
 		expect(wrapper.find('video').exists()).toBe(false)
 		expect(wrapper.find('[data-cy="youtube-embed"]').exists()).toBe(false)
+	})
+
+	it('shows a static tweet until the user loads the official embed', async () => {
+		vi.stubGlobal('fetch', vi.fn(() =>
+			Promise.resolve({
+				ok: true,
+				json: () => Promise.resolve({
+					author_name: 'US Department of the Interior',
+					type: 'rich',
+					provider_name: 'Twitter',
+					html: '<blockquote class="twitter-tweet"><p>Sunsets</p></blockquote><script async src="https://platform.twitter.com/widgets.js"></script>',
+				}),
+			}),
+		))
+
+		const wrapper = mount(LinkPreview, {
+			props: {
+				url: 'https://twitter.com/Interior/status/463440424141459456',
+				timestamp: new Date().toISOString(),
+			},
+			attachTo: document.body,
+		})
+
+		await flushPromises()
+		expect(wrapper.get('[data-cy="rich-embed"]').html()).toContain('twitter-tweet-static')
+		expect(wrapper.find('[data-cy="load-twitter-embed"]').exists()).toBe(true)
+		expect(document.querySelector('script[src="https://platform.twitter.com/widgets.js"]')).toBeNull()
+
+		await wrapper.get('[data-cy="load-twitter-embed"]').trigger('click')
+		await flushPromises()
+
+		expect(wrapper.get('[data-cy="rich-embed"]').html()).not.toContain('twitter-tweet-static')
+		expect(wrapper.get('[data-cy="rich-embed"]').html()).toContain('class="twitter-tweet"')
+		expect(wrapper.get('[data-cy="rich-embed"]').html()).toContain('data-dnt="true"')
+		expect(wrapper.find('[data-cy="load-twitter-embed"]').exists()).toBe(false)
+		expect(document.querySelector('script[src="https://platform.twitter.com/widgets.js"]')).not.toBeNull()
+
+		wrapper.unmount()
 	})
 
 	it('embeds Reddit posts via oEmbed', async () => {

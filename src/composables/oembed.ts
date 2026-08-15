@@ -87,6 +87,8 @@ export const getOEmbedConfig = (rawUrl: string): OEmbedConfig | null => {
 	if (isTweetUrl(rawUrl)) {
 		const endpoint = new URL('https://publish.twitter.com/oembed')
 		endpoint.searchParams.set('url', url.toString())
+		endpoint.searchParams.set('omit_script', '1')
+		endpoint.searchParams.set('dnt', 'true')
 		return {
 			provider: 'twitter',
 			endpoint: endpoint.toString(),
@@ -118,3 +120,20 @@ export const getOEmbedConfig = (rawUrl: string): OEmbedConfig | null => {
 }
 
 export const stripScripts = (html: string) => html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+
+const TWITTER_WIDGET_CLASS = 'twitter-tweet'
+const TWITTER_STATIC_CLASS = 'twitter-tweet-static'
+
+export const toStaticTweetHtml = (html: string) =>
+	stripScripts(html)
+		.replace(new RegExp(`class="${TWITTER_WIDGET_CLASS}"`, 'g'), `class="${TWITTER_STATIC_CLASS}"`)
+		.replace(new RegExp(`class='${TWITTER_WIDGET_CLASS}'`, 'g'), `class='${TWITTER_STATIC_CLASS}'`)
+
+export const toLiveTweetHtml = (html: string) => {
+	const cleaned = stripScripts(html)
+	if (/data-dnt\s*=/.test(cleaned)) return cleaned
+	return cleaned.replace(
+		/<blockquote([^>]*\bclass=["']twitter-tweet["'])/i,
+		'<blockquote data-dnt="true"$1',
+	)
+}

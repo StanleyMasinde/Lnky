@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { getOEmbedConfig, isRedditUrl, isTweetUrl, isYouTubeUrl } from '../oembed'
+import {
+	getOEmbedConfig,
+	isRedditUrl,
+	isTweetUrl,
+	isYouTubeUrl,
+	toLiveTweetHtml,
+	toStaticTweetHtml,
+} from '../oembed'
 
 describe('oEmbed helpers', () => {
 	it('detects tweet, YouTube, and Reddit URLs', () => {
@@ -31,7 +38,15 @@ describe('oEmbed helpers', () => {
 		const config = getOEmbedConfig('https://twitter.com/user/status/123')
 		expect(config?.provider).toBe('twitter')
 		expect(config?.endpoint).toContain('publish.twitter.com/oembed')
+		expect(config?.endpoint).toContain('dnt=true')
+		expect(config?.endpoint).toContain('omit_script=1')
 		expect(config?.scriptSrc).toBe('https://platform.twitter.com/widgets.js')
+	})
+
+	it('keeps tweet markup inert until the official widget is requested', () => {
+		const html = '<blockquote class="twitter-tweet"><p>hi</p></blockquote><script src="https://platform.twitter.com/widgets.js"></script>'
+		expect(toStaticTweetHtml(html)).toBe('<blockquote class="twitter-tweet-static"><p>hi</p></blockquote>')
+		expect(toLiveTweetHtml(html)).toBe('<blockquote data-dnt="true" class="twitter-tweet"><p>hi</p></blockquote>')
 	})
 
 	it('builds the Reddit oEmbed endpoint', () => {
