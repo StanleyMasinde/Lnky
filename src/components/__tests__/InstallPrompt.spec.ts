@@ -1,22 +1,34 @@
-import { mount } from '@vue/test-utils'
-import { afterEach, describe, expect, it } from 'vitest'
+import { mount, type VueWrapper } from '@vue/test-utils'
+import { nextTick } from 'vue'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import InstallPrompt from '../InstallPrompt.vue'
 import { showInstallPrompt } from '@/pwa/register'
 
 describe('InstallPrompt', () => {
+	let wrapper: VueWrapper
+
 	afterEach(() => {
+		wrapper?.unmount()
 		showInstallPrompt.value = false
 	})
 
-	it('is hidden by default', () => {
-		const wrapper = mount(InstallPrompt)
-		expect(wrapper.find('[data-cy="install-prompt"]').exists()).toBe(false)
+	it('renders a closed native dialog by default', () => {
+		wrapper = mount(InstallPrompt)
+		const dialog = wrapper.get('[data-cy="install-prompt"]')
+
+		expect(dialog.element.tagName).toBe('DIALOG')
+		expect((dialog.element as HTMLDialogElement).open).toBe(false)
 	})
 
-	it('shows the install dialog when opened', () => {
+	it('opens with showModal when the prompt is requested', async () => {
+		wrapper = mount(InstallPrompt)
+		const dialog = wrapper.get('[data-cy="install-prompt"]').element as HTMLDialogElement
+		dialog.showModal = vi.fn()
+
 		showInstallPrompt.value = true
-		const wrapper = mount(InstallPrompt)
-		expect(wrapper.find('[data-cy="install-prompt"]').exists()).toBe(true)
-		expect(wrapper.text()).toContain('Install Lnky')
+		await nextTick()
+		await nextTick()
+
+		expect(dialog.showModal).toHaveBeenCalled()
 	})
 })
