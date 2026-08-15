@@ -151,9 +151,9 @@ describe('LinkPreview', () => {
 	})
 
 	it('does not scrape Reddit HTML when oEmbed returns a non-JSON body', async () => {
-		vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL) => {
-			const url = String(input)
-			if (decodeURIComponent(url).includes('reddit.com/oembed')) {
+		const fetchMock = vi.fn((input: RequestInfo | URL) => {
+			const url = decodeURIComponent(String(input))
+			if (url.includes('/reddit?') || url.includes('/reddit&')) {
 				return Promise.resolve({
 					ok: true,
 					text: () => Promise.resolve('invalid URL value'),
@@ -161,20 +161,26 @@ describe('LinkPreview', () => {
 			}
 			return Promise.resolve({
 				ok: true,
-				text: () => Promise.resolve('<html><title>Blocked</title></html>'),
+				text: () => Promise.resolve('<body class="theme-beta"><title>You\'ve been blocked by network security.</title></body>'),
 			})
-		}))
+		})
+		vi.stubGlobal('fetch', fetchMock)
 
 		const wrapper = mount(LinkPreview, {
 			props: {
-				url: 'https://redd.it/92dd8',
+				url: 'https://www.reddit.com/r/pics/s/AbCdEf',
 				timestamp: new Date().toISOString(),
 			},
 		})
 
 		await flushPromises()
 		expect(wrapper.get('#title').text()).toBe('Title not available')
-		expect(wrapper.find('#title').text()).not.toBe('Blocked')
+		expect(wrapper.get('#title').text()).not.toBe('You\'ve been blocked by network security.')
+
+		const requested = fetchMock.mock.calls.map(call => decodeURIComponent(String(call[0])))
+		expect(requested.some(url => url.includes('/reddit?url='))).toBe(true)
+		expect(requested.some(url => url.includes('/proxy'))).toBe(false)
+		expect(requested.some(url => url.includes('reddit.com/oembed'))).toBe(false)
 	})
 
 	it('renders a playable video if og:video meta tag is present', async () => {

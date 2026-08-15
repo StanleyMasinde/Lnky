@@ -4,6 +4,8 @@ export interface OEmbedConfig {
 	provider: OEmbedProvider
 	endpoint: string
 	scriptSrc?: string
+	/** Fetch this endpoint directly. Do not wrap it in /proxy?url= */
+	skipProxy?: boolean
 }
 
 export interface OEmbedResponse {
@@ -59,7 +61,16 @@ export const isYouTubeUrl = (rawUrl: string) => {
 	return /\/(watch|shorts|embed|live|v)\b/.test(url.pathname)
 }
 
-const isRedditHost = (host: string) => host === 'reddit.com' || host.endsWith('.reddit.com') || host === 'redd.it'
+const isRedditHost = (host: string) =>
+	host === 'reddit.com'
+	|| host.endsWith('.reddit.com')
+	|| host === 'redd.it'
+	|| host.endsWith('.redd.it')
+
+export const isRedditHostUrl = (rawUrl: string) => {
+	const url = parseUrl(rawUrl)
+	return !!url && isRedditHost(hostnameOf(url))
+}
 
 const redditPostIdFromPath = (pathname: string) => {
 	const comments = pathname.match(/\/comments\/([a-z0-9]+)/i)
@@ -84,17 +95,7 @@ export const isRedditUrl = (rawUrl: string) => {
 		return url.pathname.length > 1
 	}
 
-	if (!isRedditHost(host)) {
-		return false
-	}
-
-	return (
-		/\/r\/[^/]+\/comments\//.test(url.pathname)
-		|| /\/r\/[^/]+\/s\//.test(url.pathname)
-		|| /\/comments\/[a-z0-9]+/i.test(url.pathname)
-		|| /\/gallery\/[a-z0-9]+/i.test(url.pathname)
-		|| /\/user\/[^/]+\/comments\//.test(url.pathname)
-	)
+	return isRedditHost(host)
 }
 
 // Reddit oEmbed rejects redd.it and /comments/{id} without a subreddit.
@@ -111,9 +112,10 @@ export const canonicalRedditUrl = (rawUrl: string) => {
 
 	if (!isRedditHost(host)) return null
 
-	const withSub = url.pathname.match(/^\/r\/([^/]+)\/comments\/([a-z0-9]+)/i)
+	const withSub = url.pathname.match(/^\/r\/([^/]+)\/comments\/([a-z0-9]+)(?:\/([^/]*))?/i)
 	if (withSub) {
-		return `https://www.reddit.com/r/${withSub[1]}/comments/${withSub[2]}`
+		const slug = withSub[3] ? `/${withSub[3]}` : ''
+		return `https://www.reddit.com/r/${withSub[1]}/comments/${withSub[2]}${slug}`
 	}
 
 	const id = redditPostIdFromPath(url.pathname)
@@ -170,15 +172,14 @@ export const getOEmbedConfig = (rawUrl: string): OEmbedConfig | null => {
 		}
 	}
 
-	if (isRedditUrl(rawUrl)) {
-		const canonical = canonicalRedditUrl(rawUrl)
-		if (!canonical) return null
-
-		const endpoint = new URL('https://www.reddit.com/oembed')
-		endpoint.searchParams.set('url', canonical)
+	if (isRedditHostUrl(rawUrl)) {
+		const postUrl = canonicalRedditUrl(rawUrl) || url.toString()
+		const endpoint = new URL('https://lnky.api.stanleymasinde.com/reddit')
+		endpoint.searchParams.set('url', postUrl)
 		return {
 			provider: 'reddit',
 			endpoint: endpoint.toString(),
+			skipProxy: true,
 		}
 	}
 
@@ -186,15 +187,15 @@ export const getOEmbedConfig = (rawUrl: string): OEmbedConfig | null => {
 }
 
 export const resolveOEmbedConfig = async (rawUrl: string): Promise<OEmbedConfig | null> => {
-	const immediate = getOEmbedConfig(rawUrl)
-	if (immediate) return immediate
-
-	if (!isRedditShareUrl(rawUrl) && !isRedditUrl(rawUrl)) {
-		return null
+	if (isRedditShareUrl(rawUrl) || (isRedditHostUrl(rawUrl) && !canonicalRedditUrl(rawUrl))) {
+		const expanded = await expandShortUrl(rawUrl)
+		if (expanded) {
+			const fromExpanded = getOEmbedConfig(expanded)
+			if (fromExpanded) return fromExpanded
+		}
 	}
 
-	const expanded = await expandShortUrl(rawUrl)
-	return expanded ? getOEmbedConfig(expanded) : null
+	return getOEmbedConfig(rawUrl)
 }
 
 export const stripScripts = (html: string) => html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
