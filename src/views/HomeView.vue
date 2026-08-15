@@ -1,55 +1,39 @@
 <script setup lang="ts">
 import type { Ref } from 'vue'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useCleanLink } from '../composables/cleanLink'
+import { saveCleanedLink } from '../composables/db'
 import { useRoute } from 'vue-router'
 import { useIsLoading } from '@/composables/state'
+import { extractSharedUrl } from '@/pwa/extractSharedUrl'
 
 const $route = useRoute()
-let sharedLink = null
-const sharedTitle = $route.query.title as string
-const sharedText = $route.query.text as string
-const sharedUrl = $route.query.url as string
-
-if (URL.canParse(sharedTitle)) {
-	sharedLink = new URL(sharedTitle)
-}
-
-if (URL.canParse(sharedText)) {
-	sharedLink = new URL(sharedText)
-}
-
-if (URL.canParse(sharedUrl)) {
-	sharedLink = new URL(sharedUrl)
-}
 
 const sanitizedLink: Ref<string | undefined> = ref()
 const currentLink: Ref<string | undefined> = ref()
 const popoverElement = ref<HTMLDivElement>()
 
-if (sharedLink) {
-	currentLink.value = sharedLink.toString()
-}
-
-// Listen to changes on the
 const cleanLink = async () => {
-	if (!currentLink.value) return // Ensure the input link is not null or undefined
+	if (!currentLink.value) return
 	const cleanedLink = await useCleanLink(currentLink.value)
 
-	// Set the cleaned URL
 	sanitizedLink.value = cleanedLink.toString()
-
-	// Save the link in the local database
-	saveLinkInDb(sanitizedLink.value)
+	void saveCleanedLink(sanitizedLink.value)
 }
+
+watch(() => $route.query, (query) => {
+	const shared = extractSharedUrl(query)
+	if (!shared) {
+		return
+	}
+
+	currentLink.value = shared
+	void cleanLink()
+}, { immediate: true })
 
 const share = async () => {
 	if (navigator.share && sanitizedLink.value) {
-		// Save the link in the local database
-		saveLinkInDb(sanitizedLink.value)
-
-		// Share using the OS share option.
-		// More ways may be added in future
+		void saveCleanedLink(sanitizedLink.value)
 		await navigator.share({
 			url: sanitizedLink.value,
 		})
@@ -63,34 +47,6 @@ const copyToClipBoard = async () => {
 		popoverElement.value?.showPopover()
 
 		setTimeout(() => popoverElement.value?.hidePopover(), 5000)
-	}
-}
-
-const saveLinkInDb = (link: string) => {
-	const request = indexedDB.open('linksDb', 2)
-
-	request.onupgradeneeded = (event) => {
-		const database = (event.target as IDBOpenDBRequest).result
-		if (!database.objectStoreNames.contains('links')) {
-			const objectStore = database.createObjectStore('links', { autoIncrement: true })
-			objectStore.createIndex('url', 'url', { unique: true })
-			objectStore.createIndex('createdAt', 'createdAt')
-		}
-	}
-
-	request.onsuccess = (event) => {
-		const database = (event.target as IDBOpenDBRequest).result
-
-		// Open a transaction to write data
-		const transaction = database.transaction('links', 'readwrite')
-		const objectStore = transaction.objectStore('links')
-
-		const newLink = {
-			url: link,
-			createdAt: new Date().toISOString(),
-		}
-
-		objectStore.add(newLink)
 	}
 }
 
