@@ -4,6 +4,8 @@ export interface OEmbedConfig {
 	provider: OEmbedProvider
 	endpoint: string
 	scriptSrc?: string
+	/** Fetch this endpoint directly. Do not wrap it in /proxy?url= */
+	skipProxy?: boolean
 }
 
 export interface OEmbedResponse {
@@ -110,9 +112,10 @@ export const canonicalRedditUrl = (rawUrl: string) => {
 
 	if (!isRedditHost(host)) return null
 
-	const withSub = url.pathname.match(/^\/r\/([^/]+)\/comments\/([a-z0-9]+)/i)
+	const withSub = url.pathname.match(/^\/r\/([^/]+)\/comments\/([a-z0-9]+)(?:\/([^/]*))?/i)
 	if (withSub) {
-		return `https://www.reddit.com/r/${withSub[1]}/comments/${withSub[2]}`
+		const slug = withSub[3] ? `/${withSub[3]}` : ''
+		return `https://www.reddit.com/r/${withSub[1]}/comments/${withSub[2]}${slug}`
 	}
 
 	const id = redditPostIdFromPath(url.pathname)
@@ -170,11 +173,13 @@ export const getOEmbedConfig = (rawUrl: string): OEmbedConfig | null => {
 	}
 
 	if (isRedditHostUrl(rawUrl)) {
-		const endpoint = new URL('https://www.reddit.com/oembed')
-		endpoint.searchParams.set('url', canonicalRedditUrl(rawUrl) || url.toString())
+		const postUrl = canonicalRedditUrl(rawUrl) || url.toString()
+		const endpoint = new URL('https://lnky.api.stanleymasinde.com/reddit')
+		endpoint.searchParams.set('url', postUrl)
 		return {
 			provider: 'reddit',
 			endpoint: endpoint.toString(),
+			skipProxy: true,
 		}
 	}
 

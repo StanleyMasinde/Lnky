@@ -133,7 +133,8 @@ watchEffect(async () => {
 	const oembed = await resolveOEmbedConfig(props.url)
 	if (oembed) {
 		try {
-			const res = await fetch(proxyUrlFor(oembed.endpoint), { mode: 'cors' })
+			const previewUrl = oembed.skipProxy ? oembed.endpoint : proxyUrlFor(oembed.endpoint)
+			const res = await fetch(previewUrl, { mode: 'cors' })
 			if (res.ok) {
 				const embedRes = parseOEmbedResponse(await res.text())
 				if (embedRes && await applyOEmbed(embedRes, oembed.provider, oembed.scriptSrc)) {

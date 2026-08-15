@@ -152,8 +152,8 @@ describe('LinkPreview', () => {
 
 	it('does not scrape Reddit HTML when oEmbed returns a non-JSON body', async () => {
 		const fetchMock = vi.fn((input: RequestInfo | URL) => {
-			const url = String(input)
-			if (decodeURIComponent(url).includes('reddit.com/oembed')) {
+			const url = decodeURIComponent(String(input))
+			if (url.includes('/reddit?') || url.includes('/reddit&')) {
 				return Promise.resolve({
 					ok: true,
 					text: () => Promise.resolve('invalid URL value'),
@@ -178,8 +178,9 @@ describe('LinkPreview', () => {
 		expect(wrapper.get('#title').text()).not.toBe('You\'ve been blocked by network security.')
 
 		const requested = fetchMock.mock.calls.map(call => decodeURIComponent(String(call[0])))
-		expect(requested.some(url => url.includes('reddit.com/oembed'))).toBe(true)
-		expect(requested.some(url => url.includes('/proxy') && url.includes('reddit.com') && !url.includes('oembed'))).toBe(false)
+		expect(requested.some(url => url.includes('/reddit?url='))).toBe(true)
+		expect(requested.some(url => url.includes('/proxy'))).toBe(false)
+		expect(requested.some(url => url.includes('reddit.com/oembed'))).toBe(false)
 	})
 
 	it('renders a playable video if og:video meta tag is present', async () => {
