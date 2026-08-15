@@ -26,7 +26,18 @@ const trackingPatterns = {
 	YouTube: ['si', 'feature', 'app', 't'],
 	Twitter: ['ref_src', 's', 't'],
 	Instagram: ['igshid', 'utm_source', 'utm_medium', 'utm_campaign', 'igsh'],
-	TikTok: ['_r', '_t', 'refer', 'is_from_webapp', 'sender_device'],
+	TikTok: [
+		'_r',
+		'_t',
+		'_d',
+		'refer',
+		'is_from_webapp',
+		'sender_device',
+		'u_code',
+		'share_item_id',
+		'share_app_id',
+		'ttclid',
+	],
 	LinkedIn: ['trk', 'utm_source', 'utm_medium', 'utm_campaign', 'rcm'],
 	Amazon: [
 		'tag',
@@ -149,6 +160,15 @@ const expandUrl = async (shortUrl: string) => {
 	}
 }
 
+const isTikTokHost = (hostname: string) => {
+	const host = hostname.replace(/^www\./, '')
+	return host === 'tiktok.com' || host.endsWith('.tiktok.com')
+}
+
+// TikTok share links put a generic `timestamp` on the video URL.
+// Only strip it on TikTok hosts so other sites keep a real timestamp param.
+const tikTokHostOnlyParams = ['timestamp']
+
 // Remove all the tracking query params
 const removeTrackers = (dirtyLink: string) => {
 	const urlObject = new URL(dirtyLink)
@@ -159,6 +179,12 @@ const removeTrackers = (dirtyLink: string) => {
 		.forEach((trackingParam) => {
 			searchParams.delete(trackingParam)
 		})
+
+	if (isTikTokHost(urlObject.hostname)) {
+		tikTokHostOnlyParams.forEach((trackingParam) => {
+			searchParams.delete(trackingParam)
+		})
+	}
 
 	urlObject.search = searchParams.toString()
 
