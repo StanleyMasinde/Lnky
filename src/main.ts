@@ -7,6 +7,18 @@ import { hydrateShortDomains } from './composables/shortDomains'
 import { initPwa } from './pwa/register'
 
 const universalErrorDiv = document.querySelector('#universalErr')
+let universalErrorTimer: ReturnType<typeof setTimeout> | undefined
+
+// Skill dwell: surface for 6 s, then slide away on its own.
+function showUniversalError(message: string) {
+	if (!(universalErrorDiv instanceof HTMLElement)) return
+	universalErrorDiv.hidden = false
+	universalErrorDiv.textContent = message
+	if (universalErrorTimer) clearTimeout(universalErrorTimer)
+	universalErrorTimer = setTimeout(() => {
+		universalErrorDiv.hidden = true
+	}, 6000)
+}
 
 window.onerror = function (
 	message: string | Event,
@@ -14,18 +26,13 @@ window.onerror = function (
 	lineno?: number,
 	colno?: number,
 ): boolean {
-	if (universalErrorDiv instanceof HTMLElement) {
-		universalErrorDiv.hidden = false
-		universalErrorDiv.textContent = `Error: ${message} at ${source}:${lineno}:${colno}`
-	}
+	showUniversalError(`Error: ${message} at ${source}:${lineno}:${colno}`)
 
 	return true
 }
 
 window.addEventListener('unhandledrejection', (event) => {
-	if (universalErrorDiv instanceof HTMLElement) {
-		universalErrorDiv.textContent = `Unhandled Promise Rejection: ${event.reason}`
-	}
+	showUniversalError(`Unhandled Promise Rejection: ${event.reason}`)
 })
 
 initPwa()
@@ -37,11 +44,8 @@ app.use(router)
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.config.errorHandler = (err, instance, info): void => {
-	if (universalErrorDiv instanceof HTMLElement) {
-		universalErrorDiv.hidden = false
-		// @ts-expect-error This is fine
-		universalErrorDiv.textContent = `Vue Error: ${err.message}`
-	}
+	// @ts-expect-error This is fine
+	showUniversalError(`Vue Error: ${err.message}`)
 }
 
 app.mount('#app')

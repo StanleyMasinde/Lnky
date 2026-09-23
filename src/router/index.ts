@@ -15,7 +15,7 @@ const router = createRouter({
 		},
 		{
 			path: '/saved-links',
-			name: 'about',
+			name: 'saved-links',
 			component: () => import('../views/SavedLinks.vue'),
 		},
 		{

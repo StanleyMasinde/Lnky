@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import LinkPreview from '@/components/LinkPreview.vue'
-import { openLinksDb } from '@/composables/db'
+import { openLinksDb, saveCleanedLink } from '@/composables/db'
+import { isShareDismissal } from '@/composables/share'
 import type { Ref } from 'vue'
 import { ref, onMounted } from 'vue'
 
@@ -11,31 +12,47 @@ interface SavedLink {
 }
 
 const savedLinks: Ref<SavedLink[]> = ref([])
-const deleteRef = ref<HTMLDialogElement>()
-const currentToDelete = ref<SavedLink>()
+const undoneLink: Ref<SavedLink | undefined> = ref()
+let undoTimer: ReturnType<typeof setTimeout> | undefined
 
-const confirmDelete = (link: SavedLink) => {
-	currentToDelete.value = link
-	deleteRef.value?.showModal()
-}
-
-// Delete Link
-const deleteLink = () => {
-	const itemId = currentToDelete.value?.id
-
-	if (!itemId) {
-		return
-	}
+// Delete immediately, offer Undo. Deletion is reversible; no confirm dialog.
+const deleteLink = (link: SavedLink) => {
 	void openLinksDb().then((db) => {
 		const transaction = db.transaction('links', 'readwrite')
 		const objectStore = transaction.objectStore('links')
 
-		const deleteOperation = objectStore.delete(itemId)
+		const deleteOperation = objectStore.delete(link.id)
 		deleteOperation.onsuccess = () => {
+			undoneLink.value = link
 			fetchSavedNotes()
-			deleteRef.value?.close()
+			if (undoTimer) clearTimeout(undoTimer)
+			undoTimer = setTimeout(() => {
+				undoneLink.value = undefined
+			}, 8000)
 		}
 	})
+}
+
+const undoDelete = () => {
+	const link = undoneLink.value
+	if (!link) return
+	undoneLink.value = undefined
+	if (undoTimer) clearTimeout(undoTimer)
+	void saveCleanedLink(link.link.url).then(() => fetchSavedNotes())
+}
+
+// Share a given link
+const shareLink = async (url: string) => {
+	if (!navigator.canShare({ url })) return
+	try {
+		await navigator.share({
+			url,
+		})
+	}
+	catch (err) {
+		if (isShareDismissal(err)) return
+		throw err
+	}
 }
 
 // Get all the saved link
@@ -60,120 +77,66 @@ const fetchSavedNotes = () => {
 	})
 }
 
-// Share a given link
-const shareLink = (url: string) => {
-	if (navigator.canShare({ url })) {
-		navigator.share({
-			url,
-		})
-	}
-}
-
 onMounted(() => {
 	fetchSavedNotes()
 })
 </script>
 
 <template>
-	<main class="grid grid-cols-12 grid-rows-1 mx-1 md:mx-48">
-		<div class="col-span-12 w-full">
-			<div
-				class="border border-neutral-300 dark:border-neutral-700 rounded-lg p-6 shadow-lg bg-white dark:bg-neutral-900">
+	<!-- Hallmark · genre: modern-minimal · macrostructure: Workbench · design-system: design.md · designed-as-app -->
+	<main class="mx-auto w-full max-w-2xl px-5 pb-10 pt-8 md:pt-12">
+		<div class="flex items-baseline justify-between gap-4">
+			<h1 class="min-w-0 text-xl font-bold">Saved links.</h1>
+			<nav aria-label="Primary" class="flex shrink-0 gap-5 text-sm font-semibold">
+				<RouterLink data-cy="home-link" to="/" active-class="text-accent underline decoration-accent decoration-2 underline-offset-8"
+					class="whitespace-nowrap text-ink-2 hover:text-ink">
+					Clean
+				</RouterLink>
+				<RouterLink data-cy="saved-links-link" to="/saved-links" active-class="text-accent underline decoration-accent decoration-2 underline-offset-8"
+					class="whitespace-nowrap text-ink-2 hover:text-ink">
+					Saved
+				</RouterLink>
+			</nav>
+		</div>
+		<p class="hl-tabnum mt-2 font-mono text-sm text-ink-2">
+			{{ savedLinks.length === 0 ? "Nothing saved yet" : `${savedLinks.length} saved` }} · kept on this device only
+		</p>
 
-				<!-- Navigation -->
-				<div
-					class="flex justify-center gap-2 mb-4 w-full sticky top-0 bg-white dark:bg-neutral-900 p-3 rounded-md shadow-sm z-10">
-					<RouterLink data-cy="home-link" active-class="bg-primary text-white" to="/"
-						class="w-full text-center p-2 rounded-lg font-semibold text-sm transition duration-200 hover:bg-primary hover:text-white">
-						Home
-					</RouterLink>
-
-					<RouterLink data-cy="saved-links-link" to="/saved-links" active-class="bg-primary text-white"
-						class="w-full text-center p-2 rounded-lg font-semibold text-sm transition duration-200 hover:bg-primary hover:text-white">
-						Saved Links
-					</RouterLink>
-				</div>
-
-				<!-- Heading -->
-				<h1 class="font-bold text-2xl mb-6 text-center text-gray-800 dark:text-gray-200">Saved Links</h1>
-
-				<!-- Link List -->
-				<div data-cy="saved-link-item">
-					<div v-if="savedLinks.length === 0"
-						class="text-center text-gray-500 dark:text-gray-400 py-10 text-lg font-medium">
-						No links found!
-					</div>
-
-					<TransitionGroup name="list" tag="div" v-else class="space-y-6">
-						<div v-for="link in savedLinks" :key="link.link.url"
-							class="border border-neutral-200 dark:border-neutral-700 rounded-lg p-4 shadow-sm bg-gray-50 dark:bg-neutral-800 transition duration-200 hover:shadow-md">
-							<LinkPreview :url="link.link.url" :timestamp="link.link.createdAt" />
-
-							<hr class="my-4 border-neutral-300 dark:border-neutral-700">
-
-							<!-- Actions -->
-							<div class="flex flex-wrap gap-3 justify-center md:justify-end">
-								<button @click.prevent="shareLink(link.link.url)"
-									class="bg-primary text-white py-2 px-5 rounded-lg font-semibold transition duration-200 hover:bg-primary/90">
-									Share
-								</button>
-								<button @click.prevent="confirmDelete(link)"
-									class="bg-red-600 text-white py-2 px-5 rounded-lg font-semibold transition duration-200 hover:bg-red-700">
-									Delete
-								</button>
-							</div>
-						</div>
-					</TransitionGroup>
-				</div>
+		<div data-cy="saved-link-item" class="mt-6">
+			<div v-if="savedLinks.length === 0" class="border-t border-solid border-rule pt-8">
+				<p class="font-semibold">No saved links yet.</p>
+				<p class="mt-1 text-ink-2">Cleaned links are kept here so you can find them offline.</p>
+				<RouterLink to="/" class="mt-4 inline-block font-semibold text-accent underline underline-offset-4 hover:text-ink">
+					Clean a link
+				</RouterLink>
 			</div>
+
+			<TransitionGroup v-else name="hl-row" tag="ul" class="border-t border-solid border-rule">
+				<li v-for="link in savedLinks" :key="link.link.url"
+					class="border-b border-solid border-rule py-5">
+					<LinkPreview :url="link.link.url" :timestamp="link.link.createdAt" />
+
+					<div class="mt-3 flex items-center justify-end gap-2">
+						<button @click.prevent="shareLink(link.link.url)"
+							class="hl-btn hl-lift whitespace-nowrap rounded-[10px] border border-solid border-rule px-5 font-semibold text-ink hover:bg-paper-2">
+							Share
+						</button>
+						<button @click.prevent="deleteLink(link)"
+							class="hl-btn hl-lift whitespace-nowrap rounded-[10px] px-4 font-semibold text-error hover:bg-paper-2">
+							Delete
+						</button>
+					</div>
+				</li>
+			</TransitionGroup>
 		</div>
 
-		<!-- Delete Confirmation Dialog -->
-		<dialog popover ref="deleteRef"
-			class="rounded-xl shadow-2xl p-6 max-w-md w-full mx-auto my-auto dark:bg-neutral-900 dark:text-white transition duration-300 ease-in-out transform">
-			<div class="flex flex-col space-y-5">
-				<h3 class="text-xl font-bold text-center text-red-600">Confirm Deletion</h3>
-				<p class="text-sm text-center text-gray-600 dark:text-gray-400">
-					This link will be lost forever. Are you sure?
-				</p>
-				<p class="line-clamp-1 text-sm text-center font-mono text-primary dark:text-primary">
-					{{ currentToDelete?.link.url }}
-				</p>
-
-				<hr class="border-gray-300 dark:border-gray-700 my-3">
-
-				<div class="flex justify-end gap-4">
-					<button @click.prevent="deleteRef?.close()"
-						class="px-5 py-2 rounded-lg font-semibold bg-gray-200 dark:bg-gray-700 dark:text-white text-gray-800 hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-200">
-						Cancel
-					</button>
-					<button @click.prevent="deleteLink()"
-						class="px-5 py-2 rounded-lg font-semibold bg-red-600 text-white hover:bg-red-700 transition duration-200">
-						Yes, Delete
-					</button>
-				</div>
-			</div>
-		</dialog>
+		<div v-if="undoneLink" role="status"
+			class="hl-toast fixed inset-x-5 bottom-5 z-toast mx-auto flex max-w-md items-center justify-between gap-4 rounded-[10px] border border-solid border-rule bg-ink px-4 py-3 text-sm text-paper">
+			<p class="min-w-0 flex-1 truncate font-mono text-xs">{{ undoneLink.link.url }}</p>
+			<button @click.prevent="undoDelete"
+				class="hl-btn shrink-0 whitespace-nowrap rounded-lg px-3 font-semibold text-paper underline underline-offset-4">
+				Undo
+			</button>
+		</div>
 	</main>
 </template>
-
-<style lang="css">
-.list-move,
-/* apply transition to moving elements */
-.list-enter-active,
-.list-leave-active {
-	transition: all 0.5s ease;
-}
-
-.list-enter-from,
-.list-leave-to {
-	opacity: 0;
-	transform: translateX(30px);
-}
-
-/* ensure leaving items are taken out of layout flow so that moving
-   animations can be calculated correctly. */
-.list-leave-active {
-	position: absolute;
-}
-</style>

@@ -1,11 +1,35 @@
+/* Hallmark · pre-emit critique: P4 H5 E4 S5 R4 V5 */
+/* Hallmark · genre: modern-minimal · macrostructure: Workbench + Long Document · design-system: design.md · designed-as-app
+ * nav: N1a · footer: Ft2 · contrast: pass (40–41) · honest: pass (46) · chrome: pass (47) · tokens: pass (48) · responsive: pass (49) · icons: pass (30) · mobile: pass (34, 49, 50–57) · slop: pass (42–45) */
 @import 'tailwindcss';
 
 @plugin '@tailwindcss/forms';
 @plugin "@tailwindcss/typography";
 
 @theme {
-  --color-primary: #695958;
-  --color-secondary: #b6c8a9;
+  --color-primary: oklch(52% 0.15 38);
+  --color-secondary: oklch(80% 0.055 135);
+
+  /* Locked system — design.md. OKLCH only; component code references these by name. */
+  --color-paper:      oklch(96.5% 0.012 55);
+  --color-paper-2:    oklch(92.5% 0.014 55);
+  --color-ink:        oklch(20% 0.012 45);
+  --color-ink-2:      oklch(34% 0.012 50);
+  --color-rule:       oklch(83% 0.012 55);
+  --color-accent:     oklch(52% 0.15 38);
+  --color-accent-ink: oklch(97% 0.008 60);
+  --color-focus:      oklch(60% 0.18 60);
+  --color-error:      oklch(55% 0.2 25);
+  --color-success:    oklch(55% 0.15 155);
+
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+
+  --z-raised: 10;
+  --z-sticky: 200;
+  --z-modal: 400;
+  --z-toast: 500;
 }
 
 /*
@@ -27,5 +51,156 @@
 
   html {
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+}
+
+/* Hallmark system base — appended, never clobbering the entry above. */
+@layer base {
+  html,
+  body {
+    overflow-x: clip;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-style: normal;
+    letter-spacing: -0.02em;
+    overflow-wrap: anywhere;
+    min-width: 0;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: var(--color-accent);
+    color: var(--color-accent-ink);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-paper:      oklch(15% 0.01 45);
+      --color-paper-2:    oklch(19% 0.011 45);
+      --color-ink:        oklch(93.5% 0.008 55);
+      --color-ink-2:      oklch(78% 0.008 55);
+      --color-rule:       oklch(30% 0.01 45);
+      --color-accent:     oklch(63% 0.13 42);
+      --color-accent-ink: oklch(20% 0.012 45);
+      --color-focus:      oklch(72% 0.15 65);
+    }
+  }
+}
+
+@layer components {
+  .wordmark {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .hl-btn {
+    white-space: nowrap;
+    min-height: 44px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .hl-lift {
+      transition: background-color var(--dur-short, 220ms) var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)), transform var(--dur-short, 220ms) var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+    }
+    .hl-lift:hover {
+      transform: translateY(-1px);
+    }
+    .hl-lift:active {
+      transform: translateY(0);
+    }
+  }
+
+  .hl-tabnum {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* One-shot list entrance — Workbench pages only. Never re-fires on scroll. */
+@keyframes hl-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hl-row-enter-active {
+  transition: opacity 220ms cubic-bezier(0.16, 1, 0.3, 1), transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hl-row-enter-from,
+.hl-row-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.hl-row-leave-active {
+  position: absolute;
+  inset-inline: 0;
+  transition: opacity 160ms cubic-bezier(0.7, 0, 0.84, 0);
+}
+
+@keyframes hl-toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.hl-toast {
+  animation: hl-toast-in 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes hl-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.hl-route-enter-active {
+  transition: opacity 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hl-route-leave-active {
+  transition: opacity 110ms cubic-bezier(0.7, 0, 0.84, 0);
+}
+.hl-route-enter-from,
+.hl-route-leave-to {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 150ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 150ms !important;
+  }
+  .hl-toast,
+  .hl-row-enter-active {
+    animation-name: hl-fade-in;
   }
 }

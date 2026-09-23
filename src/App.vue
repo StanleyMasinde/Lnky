@@ -13,20 +13,25 @@ const version = __APP_VERSION__
 </script>
 
 <template>
-	<header></header>
+	<!-- Hallmark · genre: modern-minimal · macrostructure: Workbench · design-system: design.md · designed-as-app -->
+	<header class="mx-auto flex w-full max-w-2xl items-center justify-between px-5 pt-5">
+		<RouterLink to="/" class="wordmark text-lg text-ink">Lnky</RouterLink>
+		<RouterLink to="/about" class="whitespace-nowrap text-sm font-semibold text-ink-2 hover:text-ink">
+			About
+		</RouterLink>
+	</header>
 
 	<RouterView v-slot="{ Component }">
-		<Transition enter-from-class="translate-x-[150%] opacity-0" leave-to-class="translate-x-[150%] opacity-0"
-			enter-active-class="transition duration-300" leave-active-class="transition duration-300">
+		<Transition name="hl-route">
 			<component :is="Component" />
 		</Transition>
 	</RouterView>
 
-	<div class="fixed inset-x-2 bottom-3 z-40 space-y-2 md:inset-x-auto md:right-4 md:w-96">
-		<div v-if="updateAvailable"
-			class="flex items-center justify-between gap-3 rounded-lg border border-primary bg-white p-3 text-sm shadow-lg dark:bg-neutral-900">
+	<div class="fixed inset-x-5 bottom-5 z-toast mx-auto max-w-md space-y-2">
+		<div v-if="updateAvailable" role="status"
+			class="flex items-center justify-between gap-3 rounded-[10px] border border-solid border-rule bg-paper-2 p-3 text-sm">
 			<p>A new version of Lnky is ready.</p>
-			<button type="button" class="shrink-0 rounded-lg bg-primary px-3 py-2 font-semibold text-white"
+			<button type="button" class="hl-btn hl-lift shrink-0 whitespace-nowrap rounded-[10px] bg-accent px-3 font-semibold text-accent-ink"
 				@click="applyUpdate">
 				Reload
 			</button>
@@ -35,10 +40,10 @@ const version = __APP_VERSION__
 
 	<InstallPrompt />
 
-	<footer class="p-4 text-center text-sm text-gray-500">
-		App version: {{ version }}
+	<footer class="mx-auto flex w-full max-w-2xl flex-wrap items-baseline justify-between gap-2 px-5 py-6 text-sm text-ink-2">
+		<p class="hl-tabnum font-mono text-xs">Lnky {{ version }}</p>
 		<button v-if="!isStandaloneClient && !showInstallPrompt" type="button"
-			class="ml-2 underline decoration-primary underline-offset-2 hover:text-primary" data-cy="open-install"
+			class="whitespace-nowrap font-semibold text-accent underline underline-offset-4 hover:text-ink" data-cy="open-install"
 			@click="openInstallPrompt">
 			Install app
 		</button>

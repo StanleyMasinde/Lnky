@@ -5,11 +5,16 @@ const route = useRoute()
 </script>
 
 <template>
-	<div class="h-screen flex flex-col justify-center align-center">
-		<div class="m-5">
-			<h1 class="text-3xl font-bold">Page not found</h1>
-			<p>The resouce you clicked could not be found on this server. Resource <b>{{ route.path }}</b> does not live here.</p>
-			<router-link class="hover:underline text-primary" to="/">Take me back</router-link>
-		</div>
-	</div>
+	<!-- Hallmark · genre: modern-minimal · macrostructure: Long Document · design-system: design.md · designed-as-app -->
+	<main class="mx-auto w-full max-w-prose px-5 pb-10 pt-8 md:pt-12">
+		<h1 class="text-xl font-bold">No such page.</h1>
+		<p class="mt-6 leading-[1.65]">
+			Nothing lives at <span class="font-mono text-[0.9em]">{{ route.path }}</span>.
+			It may have been a cleaned link that lost its way, or an address typed
+			from memory.
+		</p>
+		<p class="mt-4 leading-[1.65]">
+			<router-link class="font-semibold text-accent underline underline-offset-4 hover:text-ink" to="/">Take me back</router-link>.
+		</p>
+	</main>
 </template>

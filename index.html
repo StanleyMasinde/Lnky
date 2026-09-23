@@ -49,15 +49,24 @@
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <link rel="apple-touch-startup-image" href="/icons/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.json" />
+
+    <!-- Hallmark · design-system: design.md — Space Grotesk (display) + IBM Plex Sans (body) + JetBrains Mono (URLs) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
   </head>
-  <body class="dark:bg-neutral-900 dark:text-neutral-100">
+  <body>
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
 
     <div>
       <div
         hidden
-        class="fixed bottom-1 inset-x-2 text-center py-2 border rounded-lg text-red-500 font-semibold border-red-500"
+        role="alert"
+        class="fixed inset-x-5 bottom-5 z-toast mx-auto max-w-md rounded-[10px] border border-solid border-error bg-paper-2 px-4 py-3 text-center text-sm font-semibold text-error"
         id="universalErr"
       ></div>
     </div>
