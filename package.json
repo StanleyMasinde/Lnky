@@ -1,24 +1,13 @@
 {
-  "name": "lnky",
-  "version": "1.18.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "run-p type-check \"build-only {@}\" --",
-    "preview": "vite preview",
-    "test:unit": "vitest",
-    "test:e2e": "start-server-and-test preview http://localhost:4173 'cypress run --e2e'",
-    "test:e2e:dev": "start-server-and-test 'vite dev --port 4173' http://localhost:4173 'cypress open --e2e'",
-    "build-only": "vite build",
-    "type-check": "vue-tsc --build --force",
-    "lint": "eslint .",
-    "format": "prettier --write src/"
+  "author": "Stanley Masinde",
+  "bugs": {
+    "url": "https://github.com/StanleyMasinde/Lnky/issues"
   },
   "dependencies": {
     "vue": "^3.5.43",
     "vue-router": "^5.3.1"
   },
+  "description": "Avoid tracking from websites by removing the tracking ids from the URL",
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.16.1",
     "@stylistic/eslint-plugin": "^5.10.0",
@@ -51,23 +40,34 @@
     "vitest": "^4.1.11",
     "vue-tsc": "^3.3.11"
   },
-  "packageManager": "pnpm@12.6.0",
-  "description": "Avoid tracking from websites by removing the tracking ids from the URL",
-  "main": "eslint.config.js",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/StanleyMasinde/Lnky.git"
-  },
+  "homepage": "https://github.com/StanleyMasinde/Lnky#readme",
   "keywords": [
     "Vue",
     "Privacy",
     "Free",
     "OSS"
   ],
-  "author": "Stanley Masinde",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/StanleyMasinde/Lnky/issues"
+  "main": "eslint.config.js",
+  "name": "lnky",
+  "packageManager": "pnpm@12.6.0",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/StanleyMasinde/Lnky.git"
   },
-  "homepage": "https://github.com/StanleyMasinde/Lnky#readme"
+  "scripts": {
+    "build": "run-p type-check \"build-only {@}\" --",
+    "build-only": "vite build",
+    "dev": "vite",
+    "format": "prettier --write src/",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "test:e2e": "start-server-and-test preview http://localhost:4173 'cypress run --e2e'",
+    "test:e2e:dev": "start-server-and-test 'vite dev --port 4173' http://localhost:4173 'cypress open --e2e'",
+    "test:unit": "vitest",
+    "type-check": "vue-tsc --build --force"
+  },
+  "type": "module",
+  "version": "1.19.0"
 }
