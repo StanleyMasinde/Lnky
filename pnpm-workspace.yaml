@@ -1,6 +1,6 @@
-onlyBuiltDependencies:
-  - cypress
-  - esbuild
+allowBuilds:
+  cypress: true
+  esbuild: true
 
 overrides:
   '@eslint/plugin-kit@<0.3.4': '>=0.3.4'
