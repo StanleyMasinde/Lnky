@@ -1,6 +1,6 @@
 <template>
-	<!-- Hallmark · genre: modern-minimal · macrostructure: Long Document · design-system: design.md · designed-as-app -->
-	<main class="mx-auto w-full max-w-prose px-5 pb-10 pt-8 md:pt-12">
+	<!-- Hallmark · genre: editorial · macrostructure: Long Document · design-system: design.md · designed-as-app -->
+	<main class="content-page app-main mx-auto w-full max-w-prose px-5 pb-10 pt-8 md:pt-12">
 		<h1 class="text-xl font-bold">About Lnky.</h1>
 
 		<p class="mt-6 leading-[1.65]">

@@ -45,7 +45,7 @@ onMounted(() => {
 
 <template>
 	<dialog ref="dialogEl" data-cy="install-prompt" closedby="any" aria-labelledby="install-title"
-		class="m-auto w-[calc(100%-1.5rem)] max-w-md rounded-xl border border-neutral-300 bg-white p-5 text-inherit shadow-2xl backdrop:bg-black/50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100"
+		class="install-dialog m-auto w-[calc(100%-1.5rem)] max-w-md"
 		@close="onClose">
 		<h2 id="install-title" class="text-xl font-bold">Install Lnky</h2>
 		<p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
@@ -64,11 +64,11 @@ onMounted(() => {
 
 		<form method="dialog" class="mt-5 flex gap-2">
 			<button type="submit" value="dismiss"
-				class="flex-1 rounded-lg bg-gray-200 px-4 py-3 font-semibold text-gray-800 dark:bg-neutral-700 dark:text-white">
+				class="hl-btn hl-lift flex-1 bg-paper-2 px-4 py-3 font-semibold text-ink">
 				{{ isIosClient ? 'Got it' : 'Not now' }}
 			</button>
 			<button v-if="!isIosClient" type="button" data-cy="install-button"
-				class="flex-1 rounded-lg bg-primary px-4 py-3 font-semibold text-white"
+				class="hl-btn hl-lift flex-1 bg-accent px-4 py-3 font-semibold text-accent-ink"
 				@click="installApp">
 				{{ canInstall ? 'Install' : 'How to install' }}
 			</button>

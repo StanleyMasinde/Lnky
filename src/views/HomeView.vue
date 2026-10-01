@@ -68,9 +68,9 @@ const resetForm = () => {
 </script>
 
 <template>
-	<!-- Hallmark · genre: modern-minimal · macrostructure: Workbench · design-system: design.md · designed-as-app -->
-	<main class="mx-auto w-full max-w-2xl px-5 pb-10 pt-8 md:pt-12">
-		<div class="flex items-baseline justify-between gap-4">
+	<!-- Hallmark · genre: editorial · macrostructure: Split Workbench · design-system: design.md · designed-as-app -->
+	<main class="app-main mx-auto w-full max-w-2xl px-5 pb-10 pt-8 md:pt-12">
+		<div class="page-heading flex items-baseline justify-between gap-4">
 			<h1 class="min-w-0 text-xl font-bold">Strip the trackers.</h1>
 			<nav aria-label="Primary" class="flex shrink-0 gap-5 text-sm font-semibold">
 				<RouterLink data-cy="home-link" to="/" active-class="text-accent underline decoration-accent decoration-2 underline-offset-8"
@@ -88,20 +88,21 @@ const resetForm = () => {
 			copy on this device.
 		</p>
 
+		<div class="clean-workbench">
 		<form @submit.prevent="cleanLink()" @reset="resetForm" class="mt-8">
 			<label for="linkInput" class="block text-sm font-semibold">Paste link</label>
 			<input data-cy="url-input" autocomplete="off" v-model="currentLink"
-				class="hl-btn mt-2 w-full rounded-[10px] border border-solid border-rule bg-paper px-4 text-base text-ink placeholder:text-ink-2 hover:bg-paper-2"
+				class="hl-btn mt-2 w-full rounded-none border border-solid border-rule bg-paper px-4 text-base text-ink placeholder:text-ink-2 hover:bg-paper-2"
 				type="url" id="linkInput" placeholder="https://example.com/?utm_source=…" />
 			<p class="mt-2 min-h-lh text-sm text-ink-2">Trackers like <span class="font-mono text-sm">utm_source</span>, <span class="font-mono text-sm">fbclid</span> and <span class="font-mono text-sm">ref</span> are removed. Short links are expanded first.</p>
 
 			<div class="mt-4 flex flex-col gap-2 sm:flex-row">
 				<button :disabled="!currentLink" data-cy="clean-button" id="cleanButton"
-					class="hl-btn hl-lift flex-1 cursor-pointer whitespace-nowrap rounded-[10px] bg-accent px-4 font-semibold text-accent-ink disabled:cursor-not-allowed disabled:opacity-50">
+					class="hl-btn hl-lift flex-1 cursor-pointer whitespace-nowrap rounded-none bg-accent px-4 font-semibold text-accent-ink disabled:cursor-not-allowed disabled:opacity-50">
 					{{ useIsLoading().value ? "Cleaning…" : "Remove trackers" }}
 				</button>
 				<button
-					class="hl-btn hl-lift flex-1 whitespace-nowrap rounded-[10px] border border-solid border-rule px-4 font-semibold text-ink hover:bg-paper-2"
+					class="hl-btn hl-lift flex-1 whitespace-nowrap rounded-none border border-solid border-rule px-4 font-semibold text-ink hover:bg-paper-2"
 					type="reset">
 					Reset
 				</button>
@@ -112,18 +113,19 @@ const resetForm = () => {
 			<label for="cleanedOutput" class="block text-sm font-semibold">Clean link</label>
 			<textarea placeholder="The cleaned link appears here" data-cy="cleaned-url" id="cleanedOutput"
 				:value="sanitizedLink" readonly rows="2"
-				class="mt-2 w-full resize-y rounded-[10px] border border-solid border-rule bg-paper px-4 py-3 font-mono text-sm text-ink placeholder:text-ink-2 hover:bg-paper-2"></textarea>
+				class="mt-2 w-full resize-y rounded-none border border-solid border-rule bg-paper px-4 py-3 font-mono text-sm text-ink placeholder:text-ink-2 hover:bg-paper-2"></textarea>
 
 			<div class="mt-4 flex flex-col gap-2 sm:flex-row">
 				<button :disabled="!sanitizedLink" @click.prevent="copyToClipBoard()" data-cy="copy-button"
-					class="hl-btn hl-lift flex-1 whitespace-nowrap rounded-[10px] bg-accent px-4 font-semibold text-accent-ink disabled:cursor-not-allowed disabled:opacity-50">
+					class="hl-btn hl-lift flex-1 whitespace-nowrap rounded-none bg-accent px-4 font-semibold text-accent-ink disabled:cursor-not-allowed disabled:opacity-50">
 					{{ copied ? "✓ Copied" : "Copy link" }}
 				</button>
 				<button :disabled="!sanitizedLink" data-cy="share-button" @click.prevent="share"
-					class="hl-btn hl-lift flex-1 whitespace-nowrap rounded-[10px] border border-solid border-rule px-4 font-semibold text-ink hover:bg-paper-2 disabled:cursor-not-allowed disabled:opacity-50">
+					class="hl-btn hl-lift flex-1 whitespace-nowrap rounded-none border border-solid border-rule px-4 font-semibold text-ink hover:bg-paper-2 disabled:cursor-not-allowed disabled:opacity-50">
 					Share
 				</button>
 			</div>
 		</section>
+		</div>
 	</main>
 </template>

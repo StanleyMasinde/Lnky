@@ -5,8 +5,7 @@ const route = useRoute()
 </script>
 
 <template>
-	<!-- Hallmark · genre: modern-minimal · macrostructure: Long Document · design-system: design.md · designed-as-app -->
-	<main class="mx-auto w-full max-w-prose px-5 pb-10 pt-8 md:pt-12">
+	<main class="content-page app-main mx-auto w-full max-w-prose px-5 pb-10 pt-8 md:pt-12">
 		<h1 class="text-xl font-bold">No such page.</h1>
 		<p class="mt-6 leading-[1.65]">
 			Nothing lives at <span class="font-mono text-[0.9em]">{{ route.path }}</span>.

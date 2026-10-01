@@ -165,14 +165,14 @@ watchEffect(async () => {
 <template>
 	<!-- Twitter / Reddit rich oEmbed -->
 	<div v-if="embedHtml" ref="embedRoot"
-		class="p-4 rounded-lg shadow-md dark:bg-neutral-900 max-w-150 w-full overflow-x-auto mx-auto"
+		class="link-preview p-4 max-w-150 w-full overflow-x-auto mx-auto"
 		:style="embedProvider === 'twitter' && twitterEmbedLoaded ? 'min-width: 320px;' : undefined">
 		<div v-html="embedHtml" class="prose dark:prose-invert" data-cy="rich-embed"
 			:style="embedProvider === 'twitter' && twitterEmbedLoaded ? 'min-width: 550px;' : undefined"></div>
 
 		<div v-if="embedProvider === 'twitter' && !twitterEmbedLoaded" class="mt-3 space-y-2">
 			<button type="button" data-cy="load-twitter-embed"
-				class="bg-primary text-white py-2 px-5 rounded-lg font-semibold transition duration-200 hover:bg-primary/90"
+				class="hl-btn hl-lift bg-accent text-accent-ink py-2 px-5 font-semibold"
 				@click="activateTwitterEmbed">
 				Load tweet
 			</button>
@@ -187,17 +187,17 @@ watchEffect(async () => {
 	</div>
 
 	<!-- Video Preview -->
-	<div v-else-if="video" class="flex flex-col items-center p-4 border rounded-lg w-full overflow-hidden">
-		<video :src="video" controls style="max-width:100%; border-radius:8px; max-height:320px; background:#000;" />
+	<div v-else-if="video" class="link-preview flex flex-col items-center p-4 border rounded-none w-full overflow-hidden">
+		<video :src="video" controls  />
 		<div class="flex flex-col w-full mt-4">
-			<h1 id="title" class="font-semibold text-lg line-clamp-3">
+			<h2 id="title" class="font-semibold text-lg line-clamp-3">
 				{{ title || 'Title not available' }}
-			</h1>
+			</h2>
 			<p id="description" class="text-sm text-gray-600 line-clamp-5 mt-2">
 				{{ description || 'Description not available' }}
 			</p>
 			<a class="text-primary underline hover:text-primary text-sm mt-2 line-clamp-1" :href="props.url"
-				target="_blank">
+				target="_blank" rel="noopener noreferrer">
 				{{ props.url }}
 			</a>
 			<small class="text-xs font-semibold mt-2 text-gray-500">
@@ -208,19 +208,19 @@ watchEffect(async () => {
 
 	<!-- OG Metadata Preview -->
 	<div v-else
-		class="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4 p-4 border rounded-lg w-full overflow-hidden">
+		class="link-preview flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4 p-4 border rounded-none w-full overflow-hidden">
 		<div v-if="image" class="w-full md:w-[40%] shrink-0">
-			<img :src="image" alt="Preview Image" class="w-full h-auto max-h-48 rounded-md object-cover" />
+			<img :src="image" alt="Preview Image" class="w-full h-auto max-h-48 rounded-none object-cover" />
 		</div>
 		<div class="flex flex-col w-full md:w-[60%]">
-			<h1 id="title" class="font-semibold text-lg line-clamp-3">
+			<h2 id="title" class="font-semibold text-lg line-clamp-3">
 				{{ title || 'Title not available' }}
-			</h1>
+			</h2>
 			<p id="description" class="text-sm text-gray-600 line-clamp-5 mt-2">
 				{{ description || 'Description not available' }}
 			</p>
 			<a class="text-primary underline hover:text-primary text-sm mt-2 line-clamp-1" :href="props.url"
-				target="_blank">
+				target="_blank" rel="noopener noreferrer">
 				{{ props.url }}
 			</a>
 			<small class="text-xs font-semibold mt-2 text-gray-500">

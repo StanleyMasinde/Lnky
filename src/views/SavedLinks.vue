@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import LinkPreview from '@/components/LinkPreview.vue'
-import { openLinksDb, saveCleanedLink } from '@/composables/db'
+import { openLinksDb } from '@/composables/db'
 import { isShareDismissal } from '@/composables/share'
 import type { Ref } from 'vue'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
 interface SavedLink {
-	// eslint-disable-next-line no-undef
-	id: IDBValidKey
+	id: number
 	link: { url: string, createdAt: string }
 }
 
@@ -15,35 +14,68 @@ const savedLinks: Ref<SavedLink[]> = ref([])
 const undoneLink: Ref<SavedLink | undefined> = ref()
 let undoTimer: ReturnType<typeof setTimeout> | undefined
 
-// Delete immediately, offer Undo. Deletion is reversible; no confirm dialog.
-const deleteLink = (link: SavedLink) => {
-	void openLinksDb().then((db) => {
-		const transaction = db.transaction('links', 'readwrite')
-		const objectStore = transaction.objectStore('links')
+const deletionError = ref('')
+const pendingDeletes = ref(new Set<SavedLink['id']>())
+const leavingRows = ref(0)
 
-		const deleteOperation = objectStore.delete(link.id)
-		deleteOperation.onsuccess = () => {
-			undoneLink.value = link
-			fetchSavedNotes()
-			if (undoTimer) clearTimeout(undoTimer)
-			undoTimer = setTimeout(() => {
-				undoneLink.value = undefined
-			}, 8000)
-		}
-	})
+// Update the rendered list only after the transaction commits.
+const deleteLink = async (link: SavedLink) => {
+	if (pendingDeletes.value.has(link.id)) return
+	pendingDeletes.value.add(link.id)
+	deletionError.value = ''
+	try {
+		const db = await openLinksDb()
+		await new Promise<void>((resolve, reject) => {
+			const transaction = db.transaction('links', 'readwrite')
+			transaction.objectStore('links').delete(link.id)
+			transaction.oncomplete = () => resolve()
+			transaction.onabort = () => reject(transaction.error)
+			transaction.onerror = () => reject(transaction.error)
+		})
+		leavingRows.value++
+		savedLinks.value = savedLinks.value.filter(saved => saved.id !== link.id)
+		undoneLink.value = link
+		if (undoTimer) clearTimeout(undoTimer)
+		undoTimer = setTimeout(() => { undoneLink.value = undefined }, 8000)
+	}
+	catch {
+		deletionError.value = 'Could not delete this link. Please try again.'
+	}
+	finally {
+		pendingDeletes.value.delete(link.id)
+	}
 }
 
-const undoDelete = () => {
+const undoDelete = async () => {
 	const link = undoneLink.value
 	if (!link) return
-	undoneLink.value = undefined
 	if (undoTimer) clearTimeout(undoTimer)
-	void saveCleanedLink(link.link.url).then(() => fetchSavedNotes())
+	undoneLink.value = undefined
+	try {
+		const db = await openLinksDb()
+		await new Promise<void>((resolve, reject) => {
+			const transaction = db.transaction('links', 'readwrite')
+			transaction.objectStore('links').put({ ...link.link }, link.id)
+			transaction.oncomplete = () => resolve()
+			transaction.onabort = () => reject(transaction.error)
+			transaction.onerror = () => reject(transaction.error)
+		})
+		deletionError.value = ''
+		fetchSavedNotes()
+	}
+	catch {
+		undoneLink.value = link
+		deletionError.value = 'Could not restore this link. Try Undo again.'
+	}
 }
+
+onUnmounted(() => {
+	if (undoTimer) clearTimeout(undoTimer)
+})
 
 // Share a given link
 const shareLink = async (url: string) => {
-	if (!navigator.canShare({ url })) return
+	if (!navigator.share || (navigator.canShare && !navigator.canShare({ url }))) return
 	try {
 		await navigator.share({
 			url,
@@ -69,7 +101,7 @@ const fetchSavedNotes = () => {
 			getAllKeysReq.onsuccess = () => {
 				const keys = getAllKeysReq.result
 				savedLinks.value = values.map((val, i) => ({
-					id: keys[i],
+					id: Number(keys[i]),
 					link: val,
 				})).reverse()
 			}
@@ -83,9 +115,9 @@ onMounted(() => {
 </script>
 
 <template>
-	<!-- Hallmark · genre: modern-minimal · macrostructure: Workbench · design-system: design.md · designed-as-app -->
-	<main class="mx-auto w-full max-w-2xl px-5 pb-10 pt-8 md:pt-12">
-		<div class="flex items-baseline justify-between gap-4">
+	<!-- Hallmark · genre: editorial · macrostructure: Split Workbench · design-system: design.md · designed-as-app -->
+	<main class="app-main mx-auto w-full max-w-2xl px-5 pb-10 pt-8 md:pt-12">
+		<div class="page-heading flex items-baseline justify-between gap-4">
 			<h1 class="min-w-0 text-xl font-bold">Saved links.</h1>
 			<nav aria-label="Primary" class="flex shrink-0 gap-5 text-sm font-semibold">
 				<RouterLink data-cy="home-link" to="/" active-class="text-accent underline decoration-accent decoration-2 underline-offset-8"
@@ -103,7 +135,7 @@ onMounted(() => {
 		</p>
 
 		<div data-cy="saved-link-item" class="mt-6">
-			<div v-if="savedLinks.length === 0" class="border-t border-solid border-rule pt-8">
+			<div v-if="savedLinks.length === 0 && leavingRows === 0" class="saved-empty border-t border-solid border-rule pt-8">
 				<p class="font-semibold">No saved links yet.</p>
 				<p class="mt-1 text-ink-2">Cleaned links are kept here so you can find them offline.</p>
 				<RouterLink to="/" class="mt-4 inline-block font-semibold text-accent underline underline-offset-4 hover:text-ink">
@@ -111,18 +143,20 @@ onMounted(() => {
 				</RouterLink>
 			</div>
 
-			<TransitionGroup v-else name="hl-row" tag="ul" class="border-t border-solid border-rule">
-				<li v-for="link in savedLinks" :key="link.link.url"
+			<TransitionGroup name="hl-row" tag="ul" class="saved-list"
+				@after-leave="leavingRows = Math.max(0, leavingRows - 1)"
+				@leave-cancelled="leavingRows = Math.max(0, leavingRows - 1)">
+				<li v-for="link in savedLinks" :key="link.id"
 					class="border-b border-solid border-rule py-5">
 					<LinkPreview :url="link.link.url" :timestamp="link.link.createdAt" />
 
 					<div class="mt-3 flex items-center justify-end gap-2">
 						<button @click.prevent="shareLink(link.link.url)"
-							class="hl-btn hl-lift whitespace-nowrap rounded-[10px] border border-solid border-rule px-5 font-semibold text-ink hover:bg-paper-2">
+							class="hl-btn hl-lift whitespace-nowrap rounded-none border border-solid border-rule px-5 font-semibold text-ink hover:bg-paper-2">
 							Share
 						</button>
-						<button @click.prevent="deleteLink(link)"
-							class="hl-btn hl-lift whitespace-nowrap rounded-[10px] px-4 font-semibold text-error hover:bg-paper-2">
+						<button :disabled="pendingDeletes.has(link.id)" @click.prevent="deleteLink(link)"
+							class="hl-btn hl-lift whitespace-nowrap rounded-none px-4 font-semibold text-error hover:bg-paper-2">
 							Delete
 						</button>
 					</div>
@@ -130,11 +164,13 @@ onMounted(() => {
 			</TransitionGroup>
 		</div>
 
+		<p v-if="deletionError" role="alert" class="saved-error">{{ deletionError }}</p>
+
 		<div v-if="undoneLink" role="status"
-			class="hl-toast fixed inset-x-5 bottom-5 z-toast mx-auto flex max-w-md items-center justify-between gap-4 rounded-[10px] border border-solid border-rule bg-ink px-4 py-3 text-sm text-paper">
+			class="hl-toast fixed inset-x-5 bottom-5 z-toast mx-auto flex max-w-md items-center justify-between gap-4 rounded-none border border-solid border-rule bg-ink px-4 py-3 text-sm text-paper">
 			<p class="min-w-0 flex-1 truncate font-mono text-xs">{{ undoneLink.link.url }}</p>
 			<button @click.prevent="undoDelete"
-				class="hl-btn shrink-0 whitespace-nowrap rounded-lg px-3 font-semibold text-paper underline underline-offset-4">
+				class="hl-btn shrink-0 whitespace-nowrap rounded-none px-3 font-semibold text-paper underline underline-offset-4">
 				Undo
 			</button>
 		</div>

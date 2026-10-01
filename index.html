@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <link rel="icon" href="/icons/favicon.ico" sizes="any" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#695958" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#171717" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f7f4e9" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#272522" media="(prefers-color-scheme: dark)" />
     <meta name="robots" content="index, follow" />
     <meta name="language" content="English" />
 
@@ -63,12 +63,7 @@
     <script type="module" src="/src/main.ts"></script>
 
     <div>
-      <div
-        hidden
-        role="alert"
-        class="fixed inset-x-5 bottom-5 z-toast mx-auto max-w-md rounded-[10px] border border-solid border-error bg-paper-2 px-4 py-3 text-center text-sm font-semibold text-error"
-        id="universalErr"
-      ></div>
+      <div hidden role="alert" class="global-error" id="universalErr"></div>
     </div>
   </body>
 </html>
