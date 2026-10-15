@@ -1,0 +1,40 @@
+# Vite template managed by Deployer. Review and merge this PR to enable deployments.
+name: Deployer
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: deployer-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/setup@v3
+        with:
+          version: '12'
+          runtime: node@24
+          install: false
+      - name: Install dependencies
+        run: |
+          pnpm install --frozen-lockfile
+      - name: Build Vite app
+        run: |
+          pnpm run build
+      - name: Verify Vite output
+        env:
+          DEPLOYER_OUTPUT: "dist"
+        run: test -f "$DEPLOYER_OUTPUT/index.html"
+      - name: Upload Vite build
+        uses: actions/upload-artifact@v7
+        with:
+          name: deployer-app
+          path: "dist/"
+          include-hidden-files: false
+          if-no-files-found: error
+          retention-days: 3
