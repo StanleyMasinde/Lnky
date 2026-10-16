@@ -16,7 +16,7 @@ iOS does not play nice with PWAs, you'll have to open the app from your homescre
 - Click clean
 - Copy or share
 
-_I've tried very hard to make the PWA play nice in iOS but it does not seem to be possible. There are so many indefined behaviours. I suggest an Adroid device for full PWA support._
+_I've tried very hard to make the PWA play nice in iOS but it does not seem to be possible. There are so many indefined behaviours. I suggest an Android device for full PWA support._
 
 ## Features
 - [x] Removes trackers from links.
